@@ -25,11 +25,13 @@
 ### Task 1: Repository foundation và health checks
 
 **Files:**
+
 - Create: `package.json`, `tsconfig.base.json`, `.gitignore`, `.env.example`, `docker-compose.yml`
 - Create: `apps/api/**`, `apps/worker/**`, `apps/web/**`, `packages/shared/**`
 - Test: `apps/api/test/health.e2e-spec.ts`, `apps/worker/src/worker.spec.ts`, `apps/web/src/main.test.js`
 
 **Interfaces:**
+
 - Produces: `GET /api/v1/health`, `GET /api/v1/ready`, Swagger `/docs` và `/docs-json`; workspace scripts `lint`, `typecheck`, `test`, `build`.
 
 - [ ] Scaffold package manifests và Vitest/Jest harness tối thiểu để test commands thực sự chạy.
@@ -42,11 +44,13 @@
 ### Task 2: Prisma schema, migrations và seed
 
 **Files:**
+
 - Create: `apps/api/prisma/schema.prisma`, `apps/api/prisma/migrations/**/migration.sql`, `apps/api/prisma/seed.ts`
 - Create: `apps/api/src/database/prisma.service.ts`, `apps/api/src/database/database.module.ts`
 - Test: `apps/api/test/database-schema.integration-spec.ts`
 
 **Interfaces:**
+
 - Produces: `PrismaService`; enums `RoleName`, `BookingStatus`, `ConfirmationMode`, `VenueStatus` và models trong ERD.
 
 - [ ] Viết integration assertions cho unique email, role relation, composite court/offering key và structural checks; booking exclusion chưa được tạo ở task này.
@@ -58,11 +62,13 @@
 ### Task 3: Authentication, users và account locking
 
 **Files:**
+
 - Create: `apps/api/src/auth/**`, `apps/api/src/users/**`, `apps/api/src/common/auth/**`
 - Test: `apps/api/src/auth/*.spec.ts`, `apps/api/test/auth.e2e-spec.ts`
 - Create: `apps/web/src/pages/auth.js`, `apps/web/src/services/auth-api.js`
 
 **Interfaces:**
+
 - Produces: `POST /api/v1/auth/register|login|refresh|logout`, `GET/PATCH /api/v1/me`, `Principal { userId, roles }`.
 
 - [ ] Viết tests cho normalize `0901234567 -> +84901234567`, duplicate email, Argon2 hash, refresh rotation/reuse, cookie/Origin policy và user bị lock sau khi đã nhận access token.
@@ -74,11 +80,13 @@
 ### Task 4: Owner application và admin approval
 
 **Files:**
+
 - Create: `apps/api/src/owner-applications/**`, `apps/api/src/admin/owner-applications/**`, `apps/api/src/audit-logs/**`
 - Test: `apps/api/test/owner-applications.e2e-spec.ts`
 - Create: `apps/web/src/pages/owner-application.js`, `apps/web/src/pages/admin-owner-applications.js`
 
 **Interfaces:**
+
 - Produces: `POST/GET /api/v1/owner-applications`, admin approve/reject endpoints; approval atomically grants `OWNER`.
 
 - [ ] Viết E2E cho customer submit, non-admin forbidden, reject reason và approve + audit + role trong một transaction.
@@ -90,11 +98,13 @@
 ### Task 5: Venue catalog, offerings, courts và moderation
 
 **Files:**
+
 - Create: `apps/api/src/venues/**`, `apps/api/src/catalog/**`, `apps/api/src/storage/**`, `apps/api/src/admin/venues/**`
 - Test: `apps/api/test/venues.e2e-spec.ts`, `apps/api/test/venue-ownership.e2e-spec.ts`
 - Create: `apps/web/src/pages/venue-*.js`, `apps/web/src/components/venue-*.js`
 
 **Interfaces:**
+
 - Produces: public venue/sport/area endpoints; owner CRUD; admin approve/reject/hide; MinIO upload adapter.
 
 - [ ] Viết tests cho approved-owner requirement, cross-owner denial, venue status transitions, approved edit phải duyệt lại, hide vẫn giữ booking cũ, maintenance/closure bị chặn khi có booking tương lai và upload validation.
@@ -106,11 +116,13 @@
 ### Task 6: Operating schedule, closures và pricing
 
 **Files:**
+
 - Create: `apps/api/src/scheduling/**`, `apps/api/src/pricing/**`
 - Test: `apps/api/src/pricing/pricing-engine.spec.ts`, `apps/api/test/scheduling-pricing.e2e-spec.ts`
 - Create: `apps/web/src/pages/owner-schedule.js`, `apps/web/src/pages/owner-pricing.js`
 
 **Interfaces:**
+
 - Produces: `PricingEngine.quote(offeringId,startAt,endAt): PriceQuote`; owner schedule/closure/pricing CRUD; public quote endpoint.
 
 - [ ] Viết unit tests cho segmentation 30 phút, full coverage, weekday timezone, midnight/business-date rejection, multiple non-overlap windows và pricing exclusion constraint; E2E cho ownership.
@@ -122,11 +134,13 @@
 ### Task 7: Availability và booking correctness
 
 **Files:**
+
 - Create: `apps/api/src/availability/**`, `apps/api/src/bookings/**`
 - Create: `apps/api/prisma/migrations/<timestamp>_booking_constraints/migration.sql`
 - Test: `apps/api/src/bookings/booking-state-policy.spec.ts`, `apps/api/test/booking.e2e-spec.ts`, `apps/api/test/booking-concurrency.integration-spec.ts`
 
 **Interfaces:**
+
 - Produces: availability/search, booking create/list/detail/cancel, owner confirm/reject/cancel/reassign; `BookingStatePolicy.transition`.
 
 - [ ] Viết tests cho mọi transition, time policy, closure, price snapshot, idempotency, client-forged fields, capacity, concurrent race, boundary, stale pending và history SYSTEM.
@@ -139,10 +153,12 @@
 ### Task 8: Queue, expiration và notifications
 
 **Files:**
+
 - Create: `packages/shared/src/queues.ts`, `apps/api/src/notifications/**`, `apps/worker/src/processors/**`, `apps/worker/src/adapters/email.adapter.ts`
 - Test: `apps/worker/src/processors/*.spec.ts`, `apps/api/test/notifications.e2e-spec.ts`
 
 **Interfaces:**
+
 - Produces: transactional `OutboxEvent`, outbox relay, `booking-expiration`, `booking-completion`, `email-notification` jobs; in-app notification endpoints.
 
 - [ ] Viết tests cho outbox crash/retry, idempotent repeated expiration, confirm-vs-expire race, retry/backoff email, email failure isolation và read notification ownership.
@@ -154,11 +170,13 @@
 ### Task 9: Customer web experience
 
 **Files:**
+
 - Create: `apps/web/src/pages/home.js`, `search.js`, `venue-detail.js`, `bookings.js`, `notifications.js`
 - Create: `apps/web/src/components/**`, `apps/web/src/services/api.js`, `apps/web/src/services/map-provider.js`, `apps/web/src/config/map.js`, `apps/web/src/styles/**`
 - Test: `apps/web/src/**/*.test.js`, `apps/web/e2e/customer.spec.ts`
 
 **Interfaces:**
+
 - Consumes: public/auth/booking/notification APIs.
 - Produces: responsive public search, Leaflet detail map qua replaceable tile/geocoding adapter, quote/create/cancel flows.
 
@@ -171,10 +189,12 @@
 ### Task 10: Owner web experience
 
 **Files:**
+
 - Create: `apps/web/src/pages/owner-dashboard.js`, `owner-venues.js`, `owner-bookings.js`, `owner-calendar.js`
 - Test: `apps/web/e2e/owner.spec.ts`
 
 **Interfaces:**
+
 - Consumes: owner CRUD và booking action APIs.
 - Produces: owner dashboard, calendar/list/detail, inventory/schedule/pricing forms và reassignment.
 
@@ -187,10 +207,12 @@
 ### Task 11: Admin web experience
 
 **Files:**
+
 - Create: `apps/web/src/pages/admin-dashboard.js`, `admin-users.js`, `admin-venues.js`, `admin-audit.js`
 - Test: `apps/web/e2e/admin.spec.ts`, `apps/api/test/admin-authorization.e2e-spec.ts`
 
 **Interfaces:**
+
 - Consumes: admin users/applications/venues/audit APIs.
 - Produces: auditable moderation UI.
 
@@ -203,10 +225,12 @@
 ### Task 12: Hardening và Docker clean-start
 
 **Files:**
+
 - Create: `apps/api/test/authorization-matrix.e2e-spec.ts`, `apps/api/test/security.e2e-spec.ts`, `apps/web/e2e/accessibility.spec.ts`
 - Modify: `docker-compose.yml`, Dockerfiles, CI/test configuration.
 
 **Interfaces:**
+
 - Produces: reproducible clean-start and verification scripts.
 
 - [ ] Viết matrix tests cho roles/ownership, validation, rate limits, secret redaction và critical cross-domain flows.
@@ -218,10 +242,12 @@
 ### Task 13: Documentation và handoff
 
 **Files:**
+
 - Modify: `README.md`
 - Create: `docs/api/examples.md`, `docs/demo-accounts.md`, `docs/known-limitations.md`, `docs/roadmap.md`, `docs/verification-report.md`, `docs/learning-notes/phase-12-handoff.md`
 
 **Interfaces:**
+
 - Produces: clone-to-running setup, port map, troubleshooting, demo credentials and final evidence.
 
 - [ ] Chạy toàn bộ setup từ clean database và ghi chính xác commands/ports/results.

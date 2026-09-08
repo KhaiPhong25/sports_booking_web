@@ -4,35 +4,35 @@ Mọi endpoint nằm dưới `/api/v1`; Swagger UI ở `/docs`, OpenAPI JSON ở
 
 ## Public và authentication
 
-| Method | Path | Input chính | Output chính |
-|---|---|---|---|
-| POST | `/auth/register` | `{email,password,phone,displayName}` | `201 {user}` |
-| POST | `/auth/login` | `{email,password}` | `200 {accessToken,user}` + refresh cookie |
-| POST | `/auth/refresh` | refresh cookie | access token mới + cookie xoay vòng |
-| POST | `/auth/logout` | refresh cookie | `204` |
-| GET | `/sports` | — | sport list |
-| GET | `/areas` | `parentId?` | area list |
-| GET | `/venues` | `sportId,areaId,startAt,endAt,page,pageSize,sort` | public venue results đủ capacity |
-| GET | `/venues/:venueId` | — | approved venue detail |
-| GET | `/offerings/:offeringId/availability` | `startAt,endAt` | `{available,capacity}` |
-| POST | `/offerings/:offeringId/quotes` | `{startAt,endAt}` | `{amount,currency,breakdown}` |
+| Method | Path                                  | Input chính                                       | Output chính                              |
+| ------ | ------------------------------------- | ------------------------------------------------- | ----------------------------------------- |
+| POST   | `/auth/register`                      | `{email,password,phone,displayName}`              | `201 {user}`                              |
+| POST   | `/auth/login`                         | `{email,password}`                                | `200 {accessToken,user}` + refresh cookie |
+| POST   | `/auth/refresh`                       | refresh cookie                                    | access token mới + cookie xoay vòng       |
+| POST   | `/auth/logout`                        | refresh cookie                                    | `204`                                     |
+| GET    | `/sports`                             | —                                                 | sport list                                |
+| GET    | `/areas`                              | `parentId?`                                       | area list                                 |
+| GET    | `/venues`                             | `sportId,areaId,startAt,endAt,page,pageSize,sort` | public venue results đủ capacity          |
+| GET    | `/venues/:venueId`                    | —                                                 | approved venue detail                     |
+| GET    | `/offerings/:offeringId/availability` | `startAt,endAt`                                   | `{available,capacity}`                    |
+| POST   | `/offerings/:offeringId/quotes`       | `{startAt,endAt}`                                 | `{amount,currency,breakdown}`             |
 
 Public không được gọi `POST /bookings`.
 
 ## Customer
 
-| Method | Path | Input chính | Output chính |
-|---|---|---|---|
-| GET | `/me` | bearer token | profile + roles |
-| PATCH | `/me` | `{displayName,phone}` | profile |
-| POST | `/bookings` | header `Idempotency-Key`; `{offeringId,startAt,endAt}` | booking snapshot |
-| GET | `/bookings` | `status?,from?,to?,page,pageSize,sort` | booking list của principal |
-| GET | `/bookings/:bookingId` | — | booking của principal |
-| POST | `/bookings/:bookingId/cancel` | `{reason?}` | booking mới nhất |
-| GET | `/notifications` | `unread?,page,pageSize` | notification list |
-| POST | `/notifications/:id/read` | — | notification |
-| POST | `/owner-applications` | `{businessName,experience}` | application |
-| GET | `/owner-applications/me` | — | application gần nhất |
+| Method | Path                          | Input chính                                            | Output chính               |
+| ------ | ----------------------------- | ------------------------------------------------------ | -------------------------- |
+| GET    | `/me`                         | bearer token                                           | profile + roles            |
+| PATCH  | `/me`                         | `{displayName,phone}`                                  | profile                    |
+| POST   | `/bookings`                   | header `Idempotency-Key`; `{offeringId,startAt,endAt}` | booking snapshot           |
+| GET    | `/bookings`                   | `status?,from?,to?,page,pageSize,sort`                 | booking list của principal |
+| GET    | `/bookings/:bookingId`        | —                                                      | booking của principal      |
+| POST   | `/bookings/:bookingId/cancel` | `{reason?}`                                            | booking mới nhất           |
+| GET    | `/notifications`              | `unread?,page,pageSize`                                | notification list          |
+| POST   | `/notifications/:id/read`     | —                                                      | notification               |
+| POST   | `/owner-applications`         | `{businessName,experience}`                            | application                |
+| GET    | `/owner-applications/me`      | —                                                      | application gần nhất       |
 
 ## Owner
 

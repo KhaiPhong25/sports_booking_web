@@ -1,0 +1,8 @@
+AGENTS.md
+CODEX_PROJECT_CONTEXT.md
+prompt.md
+sports-booking-mvp-blueprint-and-master-prompt.md
+node_modules/
+dist/
+coverage/
+package-lock.json

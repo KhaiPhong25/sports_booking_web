@@ -1,0 +1,28 @@
+{
+  "name": "sports-booking-platform",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.12 <25"
+  },
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "dev:api": "npm run dev -w @sports-booking/api",
+    "dev:web": "npm run dev -w @sports-booking/web",
+    "dev:worker": "npm run dev -w @sports-booking/worker",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "npm run test:e2e -w @sports-booking/api",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
+}

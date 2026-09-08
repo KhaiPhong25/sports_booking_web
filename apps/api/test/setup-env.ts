@@ -1,0 +1,15 @@
+process.env.NODE_ENV = "test";
+process.env.PORT = "3000";
+process.env.DATABASE_URL =
+  "postgresql://sports:password@127.0.0.1:5432/sports_booking";
+process.env.REDIS_HOST = "127.0.0.1";
+process.env.REDIS_PORT = "6379";
+process.env.JWT_ACCESS_SECRET = "test-access-secret-with-32-characters";
+process.env.JWT_REFRESH_SECRET = "test-refresh-secret-with-32-characters";
+process.env.MAIL_HOST = "127.0.0.1";
+process.env.MAIL_PORT = "1025";
+process.env.MINIO_ENDPOINT = "127.0.0.1";
+process.env.MINIO_PORT = "9000";
+process.env.MINIO_ACCESS_KEY = "sports-local";
+process.env.MINIO_SECRET_KEY = "test-minio-secret";
+process.env.MINIO_BUCKET = "venue-images";
