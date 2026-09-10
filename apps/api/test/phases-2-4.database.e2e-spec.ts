@@ -140,5 +140,6 @@ describeDatabase("Phase 2-4 with PostgreSQL", () => {
     expect(publicVenue).toBeDefined();
     expect(publicVenue.ownerId).toBeUndefined();
     expect(publicVenue.offerings[0].courts).toBeUndefined();
+    expect(publicVenue.offerings[0].sportName).toBe("Cầu lông E2E");
   });
 });

@@ -1,5 +1,6 @@
 export function renderShell(content) {
   return `
+    <a class="skip-link" href="#main-content">Bỏ qua điều hướng</a>
     <header class="site-header">
       <a class="brand" href="/">Đặt Sân</a>
       <nav aria-label="Điều hướng chính">
@@ -10,6 +11,7 @@ export function renderShell(content) {
         <a href="/owner/venues">Quản lý sân</a>
         <a href="/owner/schedule">Lịch & giá</a>
         <a href="/bookings">Booking của tôi</a>
+        <a href="/notifications">Thông báo</a>
         <a href="/owner/bookings">Duyệt booking</a>
       </nav>
     </header>

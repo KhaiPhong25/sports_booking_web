@@ -1,5 +1,22 @@
 import { authApi } from "../services/auth-api.js";
 
+export function loginReturnPath(search = window.location.search) {
+  const returnTo = new window.URLSearchParams(search).get("returnTo");
+  if (!returnTo?.startsWith("/")) return "/";
+  try {
+    const origin =
+      window.location.origin === "null"
+        ? "http://localhost"
+        : window.location.origin;
+    const target = new window.URL(returnTo, origin);
+    return target.origin === origin
+      ? `${target.pathname}${target.search}${target.hash}`
+      : "/";
+  } catch {
+    return "/";
+  }
+}
+
 function field(id, label, type, name, autocomplete) {
   return `<label for="${id}">${label}</label><input id="${id}" name="${name}" type="${type}" autocomplete="${autocomplete}" required />`;
 }
@@ -64,7 +81,9 @@ export function mountAuthPage(container) {
       const payload = Object.fromEntries(new FormData(form));
       await authApi[form.dataset.authForm](payload);
       status.textContent = "Thành công. Đang chuyển trang…";
-      window.location.assign("/");
+      window.location.assign(
+        form.dataset.authForm === "login" ? loginReturnPath() : "/",
+      );
     } catch (error) {
       status.textContent =
         error instanceof Error ? error.message : "Có lỗi xảy ra";

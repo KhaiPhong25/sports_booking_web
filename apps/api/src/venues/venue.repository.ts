@@ -35,6 +35,7 @@ export interface OfferingRecord {
   id: string;
   venueId: string;
   sportId: string;
+  sportName?: string;
   confirmationMode: ConfirmationMode;
   advanceBookingDays: number;
   cancellationNoticeMinutes: number;

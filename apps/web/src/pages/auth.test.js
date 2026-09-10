@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { renderLoginPage, renderRegisterPage } from "./auth.js";
+import {
+  loginReturnPath,
+  renderLoginPage,
+  renderRegisterPage,
+} from "./auth.js";
 
 describe("authentication pages", () => {
   it("renders a labelled registration form with a live status region", () => {
@@ -20,5 +24,14 @@ describe("authentication pages", () => {
     expect(
       document.querySelector('button[type="submit"]')?.textContent,
     ).toContain("Đăng nhập");
+  });
+
+  it("accepts only a local return path after login", () => {
+    expect(loginReturnPath("?returnTo=%2Fvenues%2Fvenue-1%3FsportId%3D1")).toBe(
+      "/venues/venue-1?sportId=1",
+    );
+    expect(loginReturnPath("?returnTo=https%3A%2F%2Fevil.example")).toBe("/");
+    expect(loginReturnPath("?returnTo=%2F%2Fevil.example")).toBe("/");
+    expect(loginReturnPath("?returnTo=%2F%5Cevil.example")).toBe("/");
   });
 });

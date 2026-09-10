@@ -14,4 +14,18 @@ export default [
       },
     },
   },
+  {
+    files: ["e2e/**/*.js"],
+    languageOptions: {
+      globals: {
+        URL: "readonly",
+        setTimeout: "readonly",
+        SubmitEvent: "readonly",
+      },
+    },
+  },
+  {
+    files: ["playwright.config.js"],
+    languageOptions: { globals: { process: "readonly" } },
+  },
 ];

@@ -21,6 +21,8 @@ Mọi endpoint nằm dưới `/api/v1`; Swagger UI ở `/docs`, OpenAPI JSON ở
 
 Public không được gọi `POST /bookings`.
 
+Public venue list/detail trả mỗi offering với `sportId` để lọc và `sportName` để giao diện hiển thị tên dễ đọc; không lộ tên court vật lý. `latitude`/`longitude` thuộc venue dùng cho map adapter, còn tile map không đi qua API nghiệp vụ.
+
 ## Customer
 
 | Method | Path                          | Input chính                                            | Output chính               |

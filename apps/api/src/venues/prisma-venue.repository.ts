@@ -19,7 +19,7 @@ import {
 const venueInclude = {
   images: { orderBy: { sortOrder: "asc" as const } },
   amenities: { include: { amenity: true } },
-  offerings: { include: { courts: true } },
+  offerings: { include: { courts: true, sport: true } },
 } satisfies Prisma.VenueInclude;
 type VenuePayload = Prisma.VenueGetPayload<{ include: typeof venueInclude }>;
 
@@ -30,6 +30,7 @@ function mapOffering(
     id: offering.id,
     venueId: offering.venueId,
     sportId: offering.sportId,
+    sportName: offering.sport.name,
     confirmationMode: offering.confirmationMode as ConfirmationMode,
     advanceBookingDays: offering.advanceBookingDays,
     cancellationNoticeMinutes: offering.cancellationNoticeMinutes,

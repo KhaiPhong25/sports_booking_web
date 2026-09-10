@@ -307,6 +307,7 @@ export class VenuesService {
           id: offering.id,
           venueId: offering.venueId,
           sportId: offering.sportId,
+          sportName: offering.sportName,
           confirmationMode: offering.confirmationMode,
           advanceBookingDays: offering.advanceBookingDays,
           cancellationNoticeMinutes: offering.cancellationNoticeMinutes,
