@@ -17,7 +17,7 @@ MVP dùng modular monolith để giữ transaction booking trong một database 
 - Bước thời gian 30 phút; booking từ 60 phút đến 4 giờ và phải tạo trước ít nhất 60 phút.
 - Dữ liệu thời gian lưu UTC; quy tắc lịch và hiển thị dùng `Asia/Ho_Chi_Minh`.
 - VND lưu số nguyên; `pricePerSlot` là giá cho một đoạn 30 phút.
-- JWT access token 15 phút; refresh session xoay vòng, hash token trong database, thời hạn 30 ngày.
+- JWT access token 15 phút; refresh session xoay vòng, hash token trong database, thời hạn 7 ngày.
 - Booking đã kết thúc được worker tự chuyển `COMPLETED`; owner vẫn có thể hủy trước giờ bắt đầu và phải ghi lý do.
 - Khu vực hành chính lưu dưới dạng bảng `areas` có `code`, `name`, `type` và quan hệ cha tùy chọn. Seed phản ánh dữ liệu demo, không hard-code quận/huyện vào schema.
 - Email dùng MailHog local; ảnh dùng MinIO; bản đồ dùng Leaflet và tile OpenStreetMap qua cấu hình adapter.
@@ -131,7 +131,7 @@ Contract chi tiết ở [api-contract.md](./api-contract.md), ma trận quyền 
 
 Argon2 hash password và refresh token; rotation phát hiện token reuse và revoke session family. JWT chứa `securityVersion`; guard của mọi protected request đọc user hiện tại và từ chối nếu locked hoặc version không khớp. Lock user tăng version và revoke mọi refresh session.
 
-Access token chỉ giữ trong memory của web app. Refresh cookie là HttpOnly, `SameSite=Lax`, `Path=/api/v1/auth`, và `Secure` ở production. MVP deploy same-origin; refresh/logout kiểm tra `Origin`, CORS dùng allowlist và không dùng wildcard với credentials. Role guard luôn đi kèm ownership policy. API không nhận authoritative `ownerId`, `courtId` hay price. Auth endpoints có rate limit. Upload kiểm tra MIME, kích thước và object key server-generated. Admin action quan trọng luôn tạo audit log.
+Access token chỉ giữ trong memory của web app. Refresh cookie là HttpOnly, `SameSite=Strict`, `Path=/api/v1/auth`, và `Secure` ở production. MVP deploy same-origin; refresh/logout kiểm tra `Origin`, CORS dùng allowlist và không dùng wildcard với credentials. Role guard luôn đi kèm ownership policy. API không nhận authoritative `ownerId`, `courtId` hay price. Auth endpoints có rate limit. Upload kiểm tra MIME, kích thước và object key server-generated. Admin action quan trọng luôn tạo audit log.
 
 ## 12. Ngoài phạm vi
 

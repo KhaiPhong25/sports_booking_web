@@ -6,7 +6,12 @@ export default [
   {
     files: ["src/**/*.js"],
     languageOptions: {
-      globals: { document: "readonly", window: "readonly" },
+      globals: {
+        document: "readonly",
+        window: "readonly",
+        fetch: "readonly",
+        FormData: "readonly",
+      },
     },
   },
 ];

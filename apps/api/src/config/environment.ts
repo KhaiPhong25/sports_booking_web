@@ -43,6 +43,7 @@ export function validateEnvironment(
     REDIS_PORT: validPort(input, "REDIS_PORT", 6379),
     JWT_ACCESS_SECRET: requiredString(input, "JWT_ACCESS_SECRET", 32),
     JWT_REFRESH_SECRET: requiredString(input, "JWT_REFRESH_SECRET", 32),
+    WEB_ORIGIN: String(input.WEB_ORIGIN ?? "http://localhost:5173"),
     MAIL_HOST: requiredString(input, "MAIL_HOST"),
     MAIL_PORT: validPort(input, "MAIL_PORT", 1025),
     MINIO_ENDPOINT: requiredString(input, "MINIO_ENDPOINT"),
