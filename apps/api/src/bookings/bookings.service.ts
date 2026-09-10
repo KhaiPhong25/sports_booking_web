@@ -31,7 +31,7 @@ import { BookingView } from "./booking.types";
 
 const bookingInclude = {
   court: { select: { internalName: true } },
-  customer: { select: { email: true, displayName: true } },
+  customer: { select: { email: true, displayName: true, phone: true } },
   offering: {
     select: {
       venue: {
@@ -867,7 +867,11 @@ export class BookingsService {
       customerId: booking.customerId,
       offeringId: booking.offeringId,
       ...(includeCourt
-        ? { courtId: booking.courtId, courtName: booking.court.internalName }
+        ? {
+            courtId: booking.courtId,
+            courtName: booking.court.internalName,
+            customer: booking.customer,
+          }
         : {}),
       venueId: booking.offering.venue.id,
       venueName: booking.offering.venue.name,

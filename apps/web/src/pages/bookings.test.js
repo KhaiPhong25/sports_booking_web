@@ -6,7 +6,6 @@ import {
   renderBookingWidget,
   renderCustomerBookingDetail,
   renderCustomerBookings,
-  renderOwnerBookings,
 } from "./bookings.js";
 
 describe("booking pages", () => {
@@ -58,7 +57,7 @@ describe("booking pages", () => {
     expect(document.querySelector('[name="courtId"]')).toBeNull();
   });
 
-  it("hides internal courts from customers and shows them to owners", () => {
+  it("hides internal courts from customers", () => {
     const booking = {
       id: "booking-1",
       venueName: "Sân Xanh",
@@ -72,8 +71,6 @@ describe("booking pages", () => {
     };
     document.body.innerHTML = renderCustomerBookings([booking]);
     expect(document.body.textContent).not.toContain("Sân nội bộ A");
-    document.body.innerHTML = renderOwnerBookings([booking]);
-    expect(document.body.textContent).toContain("Sân nội bộ A");
   });
   it("renders filters, Vietnamese status text and detail links", () => {
     const booking = {

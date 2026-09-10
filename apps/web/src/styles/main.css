@@ -17,12 +17,22 @@ a {
   color: inherit;
 }
 .site-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: center;
   justify-content: space-between;
   padding: 1rem clamp(1rem, 5vw, 5rem);
   background: #fff;
   border-bottom: 1px solid #d9e2dc;
+}
+.owner-nav {
+  grid-column: 1 / -1;
+  padding-top: 0.75rem;
+  border-top: 1px solid #edf1ee;
+}
+.owner-nav a {
+  color: #0d5634;
+  font-weight: 700;
 }
 .skip-link {
   position: fixed;
@@ -142,6 +152,7 @@ button:focus-visible {
   gap: 1rem;
 }
 .venue-card,
+.venue-management-card,
 .inventory-group,
 .booking-card,
 .booking-widget {
@@ -149,6 +160,17 @@ button:focus-visible {
   background: #fff;
   border: 1px solid #d9e2dc;
   border-radius: 0.75rem;
+}
+.venue-management-card {
+  padding: clamp(1rem, 3vw, 2rem);
+  background: #fff;
+  border: 1px solid #d9e2dc;
+  border-radius: 1rem;
+}
+.management-list {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0;
 }
 .form-grid {
   display: grid;
@@ -187,6 +209,165 @@ button:focus-visible {
 }
 .booking-card {
   margin: 1rem 0;
+}
+.booking-card__heading,
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.booking-card__heading h2,
+.booking-card__heading p {
+  margin-top: 0;
+}
+.status-pill {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.25rem 0.65rem;
+  color: #0d5634;
+  background: #e7f5ed;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.status-pill--rejected,
+.status-pill--cancelled,
+.status-pill--expired {
+  color: #72302c;
+  background: #fcebea;
+}
+.metric-grid,
+.owner-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.metric-card,
+.action-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.25rem;
+  background: #fff;
+  border: 1px solid #d9e2dc;
+  border-radius: 0.75rem;
+}
+.metric-card strong {
+  color: #146c43;
+  font-size: 2rem;
+}
+.action-card {
+  min-height: 7rem;
+  text-decoration: none;
+}
+.action-card:hover {
+  border-color: #146c43;
+}
+.week-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.calendar-day {
+  min-width: 0;
+  padding: 0.75rem;
+  background: #fff;
+  border: 1px solid #d9e2dc;
+  border-radius: 0.75rem;
+}
+.calendar-day h2 {
+  font-size: 0.9rem;
+}
+.calendar-booking {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  padding: 0.65rem;
+  background: #eff7f2;
+  border-left: 0.25rem solid #146c43;
+  border-radius: 0.35rem;
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+.calendar-booking--cancelled,
+.calendar-booking--rejected,
+.calendar-booking--expired {
+  background: #f8efee;
+  border-left-color: #72302c;
+}
+.detail-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+}
+.detail-list div {
+  padding: 0.75rem;
+  background: #f4f7f4;
+  border-radius: 0.5rem;
+}
+.detail-list dt {
+  font-weight: 800;
+}
+.detail-list dd {
+  margin: 0.25rem 0 0;
+}
+.owner-booking-actions,
+.inline-form,
+.schedule-row {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.inline-form {
+  grid-template-columns: minmax(10rem, 1fr) auto;
+  align-items: end;
+}
+.inline-form label {
+  display: grid;
+  gap: 0.35rem;
+}
+.schedule-row {
+  grid-template-columns: repeat(4, minmax(7rem, 1fr));
+  align-items: end;
+  padding: 1rem;
+  border: 1px solid #d9e2dc;
+  border-radius: 0.75rem;
+}
+.schedule-row > label:not(.checkbox-label) {
+  display: grid;
+  gap: 0.35rem;
+}
+.schedule-summary {
+  font-weight: 800;
+}
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.checkbox-label input {
+  min-height: auto;
+}
+.checkbox-grid fieldset {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+  border: 1px solid #d9e2dc;
+  border-radius: 0.75rem;
+}
+.danger {
+  color: #fff;
+  background: #8f302a;
+  border-color: #8f302a;
+}
+.notice {
+  padding: 0.75rem;
+  background: #fff4d6;
+  border-left: 0.25rem solid #b37700;
 }
 .booking-widget {
   margin-top: 1rem;
@@ -275,7 +456,10 @@ button:focus-visible {
 @media (max-width: 34rem) {
   .site-header {
     align-items: flex-start;
-    flex-direction: column;
+    grid-template-columns: 1fr;
+  }
+  .owner-nav {
+    grid-column: auto;
   }
   nav {
     display: grid;
@@ -284,7 +468,9 @@ button:focus-visible {
     gap: 0.5rem 1rem;
   }
   .page-heading,
-  .notification-card {
+  .notification-card,
+  .booking-card__heading,
+  .calendar-nav {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -294,6 +480,11 @@ button:focus-visible {
   }
   .venue-map {
     min-height: 17rem;
+  }
+  .week-calendar,
+  .schedule-row,
+  .inline-form {
+    grid-template-columns: 1fr;
   }
 }
 

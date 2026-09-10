@@ -5,14 +5,18 @@ export function renderShell(content) {
       <a class="brand" href="/">Đặt Sân</a>
       <nav aria-label="Điều hướng chính">
         <a href="/">Tìm sân</a>
+        <a href="/bookings">Booking của tôi</a>
+        <a href="/notifications">Thông báo</a>
         <a href="/login">Đăng nhập</a>
         <a href="/register">Đăng ký</a>
         <a href="/owner/apply">Trở thành chủ sân</a>
+      </nav>
+      <nav class="owner-nav" aria-label="Điều hướng chủ sân">
+        <a href="/owner">Tổng quan owner</a>
+        <a href="/owner/calendar">Lịch booking</a>
+        <a href="/owner/bookings">Quản lý booking</a>
         <a href="/owner/venues">Quản lý sân</a>
         <a href="/owner/schedule">Lịch & giá</a>
-        <a href="/bookings">Booking của tôi</a>
-        <a href="/notifications">Thông báo</a>
-        <a href="/owner/bookings">Duyệt booking</a>
       </nav>
     </header>
     <main id="main-content">${

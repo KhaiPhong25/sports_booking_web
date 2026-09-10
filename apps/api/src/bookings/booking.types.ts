@@ -6,6 +6,7 @@ export interface BookingView {
   offeringId: string;
   courtId?: string;
   courtName?: string;
+  customer?: { displayName: string; email: string; phone: string };
   venueId: string;
   venueName: string;
   sportName: string;

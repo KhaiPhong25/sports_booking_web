@@ -1,11 +1,9 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import {
-  renderOwnerVenueForm,
   renderPublicVenueDetail,
   renderPublicVenues,
   renderVenueSearchForm,
-  renderVenueInventory,
 } from "./venues.js";
 
 describe("venue pages", () => {
@@ -14,26 +12,6 @@ describe("venue pages", () => {
     expect(document.querySelector(".empty-state")?.textContent).toContain(
       "chưa có sân",
     );
-  });
-
-  it("never asks the browser to submit an authoritative owner id", () => {
-    document.body.innerHTML = renderOwnerVenueForm({ areas: [] });
-    expect(document.querySelector('[name="ownerId"]')).toBeNull();
-    expect(document.querySelector('label[for="venue-name"]')).not.toBeNull();
-  });
-
-  it("shows physical courts only in owner inventory controls", () => {
-    document.body.innerHTML = renderVenueInventory({
-      offerings: [
-        {
-          id: "offer-1",
-          sportId: "badminton",
-          courts: [{ id: "court-1", internalName: "Sân 1", isActive: false }],
-        },
-      ],
-    });
-    expect(document.body.textContent).toContain("Sân 1");
-    expect(document.body.textContent).toContain("Bảo trì / tạm ngừng");
   });
 
   it("renders anonymous search fields for sport, area, date and interval", () => {

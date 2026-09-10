@@ -244,6 +244,7 @@ describeDatabase("Phase 5-6 API with PostgreSQL", () => {
       expect.objectContaining({ status: "PENDING", priceAmount: 100_000 }),
     );
     expect(created.body.courtId).toBeUndefined();
+    expect(created.body.customer).toBeUndefined();
     bookingId = created.body.id as string;
     expect(
       await prisma.notification.count({
@@ -288,6 +289,11 @@ describeDatabase("Phase 5-6 API with PostgreSQL", () => {
       .set("Authorization", `Bearer ${ownerToken}`)
       .expect(200);
     expect(ownerDetail.body.courtId).toBe(targetCourtId);
+    expect(ownerDetail.body.customer).toEqual({
+      displayName: `customer-${suffix}@example.com`,
+      email: `customer-${suffix}@example.com`,
+      phone: "+84901234567",
+    });
     await request(app.getHttpServer())
       .get(`/api/v1/owner/bookings/${created.body.id as string}`)
       .set("Authorization", `Bearer ${otherOwnerToken}`)

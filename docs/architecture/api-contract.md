@@ -51,6 +51,7 @@ Owner CRUD đều kiểm tra resource thuộc venue của principal.
 - `GET|POST /owner/venues/:venueId/closures`; `PATCH|DELETE /owner/closures/:closureId`.
 - `GET|POST /owner/offerings/:offeringId/pricing-rules`; `PATCH|DELETE /owner/pricing-rules/:ruleId`.
 - `GET /owner/bookings?venueId=&status=&from=&to=&page=&pageSize=&sort=`.
+- `GET /owner/bookings/:id` trả booking thuộc venue của owner, gồm `customer: {displayName,email,phone}` phục vụ vận hành. Customer booking response không có object liên hệ này; booking của owner khác trả `404`.
 - `POST /owner/bookings/:id/confirm` (empty body), `/reject` (`{reason}`), `/cancel` (`{reason}`), `/reassign` (`{courtId}`).
 
 Archive/disable hoặc tạo closure trả `409 RESOURCE_HAS_ACTIVE_BOOKINGS` nếu chồng `PENDING`/`CONFIRMED` tương lai. Reassign khóa old/target theo UUID ổn định, target phải cùng offering, active và không overlap.

@@ -14,20 +14,16 @@ import {
 } from "./pages/owner-application.js";
 import {
   mountAdminVenues,
-  mountOwnerVenues,
   mountPublicVenues,
   mountPublicVenueDetail,
   renderAdminVenues,
-  renderOwnerVenues,
   renderPublicVenues,
 } from "./pages/venues.js";
 import { authApi } from "./services/auth-api.js";
 import {
   mountCustomerBookings,
   mountCustomerBookingDetail,
-  mountOwnerBookings,
   renderCustomerBookings,
-  renderOwnerBookings,
 } from "./pages/bookings.js";
 import {
   mountNotifications,
@@ -37,6 +33,23 @@ import {
   mountOwnerSchedulePricing,
   renderOwnerSchedulePricing,
 } from "./pages/schedule-pricing.js";
+import {
+  mountOwnerDashboard,
+  renderOwnerDashboard,
+} from "./pages/owner-dashboard.js";
+import {
+  mountOwnerCalendar,
+  renderOwnerCalendar,
+} from "./pages/owner-calendar.js";
+import {
+  mountOwnerBookingDetail,
+  mountOwnerBookings,
+  renderOwnerBookings,
+} from "./pages/owner-bookings.js";
+import {
+  mountOwnerVenuesPage,
+  renderOwnerVenuesPage,
+} from "./pages/owner-venues.js";
 
 const app = document.querySelector("#app");
 if (!app) {
@@ -48,7 +61,9 @@ const routes = {
   "/register": renderRegisterPage,
   "/owner/apply": renderOwnerApplication,
   "/admin/owner-applications": renderAdminOwnerApplications,
-  "/owner/venues": renderOwnerVenues,
+  "/owner": renderOwnerDashboard,
+  "/owner/calendar": renderOwnerCalendar,
+  "/owner/venues": renderOwnerVenuesPage,
   "/admin/venues": renderAdminVenues,
   "/owner/schedule": renderOwnerSchedulePricing,
   "/bookings": renderCustomerBookings,
@@ -59,6 +74,7 @@ const protectedPaths = ["/owner/", "/admin/", "/bookings", "/notifications"];
 
 async function initialize() {
   if (
+    window.location.pathname === "/owner" ||
     protectedPaths.some((prefix) => window.location.pathname.startsWith(prefix))
   ) {
     try {
@@ -75,10 +91,13 @@ async function initialize() {
   const bookingDetailMatch = window.location.pathname.match(
     /^\/bookings\/([^/]+)$/,
   );
+  const ownerBookingDetailMatch = window.location.pathname.match(
+    /^\/owner\/bookings\/([^/]+)$/,
+  );
   app.innerHTML = renderPage
     ? renderShell(renderPage())
     : renderShell(
-        venueDetailMatch || bookingDetailMatch
+        venueDetailMatch || bookingDetailMatch || ownerBookingDetailMatch
           ? `<p role="status">Đang tải ${venueDetailMatch ? "địa điểm" : "booking"}…</p>`
           : undefined,
       );
@@ -88,7 +107,9 @@ async function initialize() {
     mountAdminOwnerApplications(app);
   }
   if (window.location.pathname === "/") mountPublicVenues(app);
-  if (window.location.pathname === "/owner/venues") mountOwnerVenues(app);
+  if (window.location.pathname === "/owner") mountOwnerDashboard(app);
+  if (window.location.pathname === "/owner/calendar") mountOwnerCalendar(app);
+  if (window.location.pathname === "/owner/venues") mountOwnerVenuesPage(app);
   if (window.location.pathname === "/admin/venues") mountAdminVenues(app);
   if (window.location.pathname === "/owner/schedule")
     mountOwnerSchedulePricing(app);
@@ -96,8 +117,11 @@ async function initialize() {
   if (window.location.pathname === "/notifications") mountNotifications(app);
   if (window.location.pathname === "/owner/bookings") mountOwnerBookings(app);
   if (venueDetailMatch) mountPublicVenueDetail(app, venueDetailMatch[1]);
-  if (bookingDetailMatch)
+  if (ownerBookingDetailMatch) {
+    mountOwnerBookingDetail(app, ownerBookingDetailMatch[1]);
+  } else if (bookingDetailMatch) {
     mountCustomerBookingDetail(app, bookingDetailMatch[1]);
+  }
 }
 
 void initialize();

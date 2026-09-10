@@ -68,14 +68,14 @@ function canCustomerCancel(booking) {
   return ["PENDING", "CONFIRMED"].includes(booking.status);
 }
 
-function bookingCard(booking, owner, detail = false) {
+function bookingCard(booking, detail = false) {
   const title = `${escapeHtml(booking.venueName)} · ${escapeHtml(booking.sportName)}`;
   return `<article class="booking-card" data-booking-id="${escapeHtml(booking.id)}">
-    <h2>${owner || detail ? title : `<a href="/bookings/${escapeHtml(booking.id)}">${title}</a>`}</h2>
+    <h2>${detail ? title : `<a href="/bookings/${escapeHtml(booking.id)}">${title}</a>`}</h2>
     <p><strong>Trạng thái:</strong> <span data-booking-status>${escapeHtml(statusLabels[booking.status] ?? booking.status)}</span></p>
     <p><time datetime="${escapeHtml(booking.startAt)}">${escapeHtml(businessDateTime.format(new Date(booking.startAt)))}</time> – <time datetime="${escapeHtml(booking.endAt)}">${escapeHtml(businessDateTime.format(new Date(booking.endAt)))}</time></p>
     <p><strong>Giá đã chốt:</strong> ${escapeHtml(vnd.format(booking.priceAmount))}</p>
-    ${owner ? `<p><strong>Sân vật lý:</strong> ${escapeHtml(booking.courtName ?? booking.courtId ?? "Chưa phân")}</p><label>Lý do thao tác<input name="reason" /></label><label>Court ID mới<input name="courtId" /></label><div class="actions"><button data-action="confirm">Duyệt</button><button data-action="reject" class="secondary">Từ chối</button><button data-action="cancel" class="secondary">Hủy</button><button data-action="reassign" class="secondary">Chuyển sân</button></div>` : `${canCustomerCancel(booking) ? '<button data-action="cancel" class="secondary">Hủy booking</button>' : ""}`}
+    ${canCustomerCancel(booking) ? '<button data-action="cancel" class="secondary">Hủy booking</button>' : ""}
   </article>`;
 }
 
@@ -96,15 +96,11 @@ function renderBookingFilters(filters = {}) {
 }
 
 export function renderCustomerBookings(bookings = [], filters = {}) {
-  return `<section class="catalog" aria-labelledby="customer-bookings-title"><div class="page-heading"><div><p class="eyebrow">Tài khoản</p><h1 id="customer-bookings-title">Booking của tôi</h1></div><a href="/notifications">Xem thông báo</a></div>${renderBookingFilters(filters)}<div data-booking-results>${bookings.map((item) => bookingCard(item, false)).join("") || '<p class="empty-state">Bạn chưa có booking phù hợp.</p>'}</div><p class="form-status" role="status" aria-live="polite"></p></section>`;
+  return `<section class="catalog" aria-labelledby="customer-bookings-title"><div class="page-heading"><div><p class="eyebrow">Tài khoản</p><h1 id="customer-bookings-title">Booking của tôi</h1></div><a href="/notifications">Xem thông báo</a></div>${renderBookingFilters(filters)}<div data-booking-results>${bookings.map((item) => bookingCard(item)).join("") || '<p class="empty-state">Bạn chưa có booking phù hợp.</p>'}</div><p class="form-status" role="status" aria-live="polite"></p></section>`;
 }
 
 export function renderCustomerBookingDetail(booking) {
-  return `<section class="catalog" aria-labelledby="booking-detail-title"><a class="back-link" href="/bookings">← Tất cả booking</a><h1 id="booking-detail-title">Chi tiết booking</h1>${bookingCard(booking, false, true)}<p class="form-status" role="status" aria-live="polite"></p></section>`;
-}
-
-export function renderOwnerBookings(bookings = []) {
-  return `<section class="catalog"><h1>Booking tại các sân của tôi</h1>${bookings.map((item) => bookingCard(item, true)).join("") || '<p class="empty-state">Chưa có booking.</p>'}<p role="status" aria-live="polite"></p></section>`;
+  return `<section class="catalog" aria-labelledby="booking-detail-title"><a class="back-link" href="/bookings">← Tất cả booking</a><h1 id="booking-detail-title">Chi tiết booking</h1>${bookingCard(booking, true)}<p class="form-status" role="status" aria-live="polite"></p></section>`;
 }
 
 function interval(form) {
@@ -269,42 +265,6 @@ export async function mountCustomerBookingDetail(container, id) {
       button.disabled = false;
       main.querySelector('[role="status"]').textContent =
         error instanceof Error ? error.message : "Không thể hủy";
-    }
-  });
-}
-
-export async function mountOwnerBookings(container) {
-  const main = container.querySelector("main");
-  try {
-    const page = await apiRequest("/owner/bookings");
-    main.innerHTML = renderOwnerBookings(page.items);
-  } catch (error) {
-    main.innerHTML = `<section class="page-card"><p role="alert">${escapeHtml(error instanceof Error ? error.message : "Không tải được booking")}</p></section>`;
-    return;
-  }
-  main.addEventListener("click", async (event) => {
-    const button = event.target.closest("button[data-action]");
-    const card = button?.closest("[data-booking-id]");
-    if (!card) return;
-    const action = button.dataset.action;
-    const reason = card.querySelector('[name="reason"]')?.value ?? "";
-    const courtId = card.querySelector('[name="courtId"]')?.value ?? "";
-    try {
-      await apiRequest(`/owner/bookings/${card.dataset.bookingId}/${action}`, {
-        method: "POST",
-        ...(action === "confirm"
-          ? {}
-          : {
-              body: JSON.stringify(
-                action === "reassign" ? { courtId } : { reason },
-              ),
-            }),
-      });
-      main.querySelector('[role="status"]').textContent =
-        "Đã cập nhật booking.";
-    } catch (error) {
-      main.querySelector('[role="status"]').textContent =
-        error instanceof Error ? error.message : "Không thể cập nhật";
     }
   });
 }
