@@ -9,6 +9,11 @@
   "engines": {
     "node": ">=22.12 <25"
   },
+  "overrides": {
+    "@nestjs/platform-express": {
+      "multer": "2.3.0"
+    }
+  },
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "dev:api": "npm run dev -w @sports-booking/api",
@@ -23,6 +28,7 @@
     "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build"
   },
   "devDependencies": {
+    "multer": "2.3.0",
     "prettier": "^3.6.2"
   }
 }
