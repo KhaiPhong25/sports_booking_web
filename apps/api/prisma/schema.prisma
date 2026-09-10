@@ -47,26 +47,32 @@ enum ActorType {
   SYSTEM
 }
 
+enum EmailDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
 model User {
-  id                    String                 @id @default(uuid()) @db.Uuid
-  email                 String                 @unique
-  phone                 String
-  displayName           String                 @map("display_name")
-  passwordHash          String                 @map("password_hash")
-  isLocked              Boolean                @default(false) @map("is_locked")
-  securityVersion       Int                    @default(1) @map("security_version")
-  createdAt             DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt             DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
-  roles                 UserRole[]
-  refreshSessions       RefreshSession[]
-  ownerApplications     OwnerApplication[]     @relation("OwnerApplicant")
-  reviewedApplications  OwnerApplication[]     @relation("OwnerApplicationReviewer")
-  venues                Venue[]
-  bookings              Booking[]
-  bookingStatusChanges  BookingStatusHistory[]
-  notifications         Notification[]
-  idempotencyRecords    IdempotencyRecord[]
-  auditLogs             AuditLog[]
+  id                   String                 @id @default(uuid()) @db.Uuid
+  email                String                 @unique
+  phone                String
+  displayName          String                 @map("display_name")
+  passwordHash         String                 @map("password_hash")
+  isLocked             Boolean                @default(false) @map("is_locked")
+  securityVersion      Int                    @default(1) @map("security_version")
+  createdAt            DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  roles                UserRole[]
+  refreshSessions      RefreshSession[]
+  ownerApplications    OwnerApplication[]     @relation("OwnerApplicant")
+  reviewedApplications OwnerApplication[]     @relation("OwnerApplicationReviewer")
+  venues               Venue[]
+  bookings             Booking[]
+  bookingStatusChanges BookingStatusHistory[]
+  notifications        Notification[]
+  idempotencyRecords   IdempotencyRecord[]
+  auditLogs            AuditLog[]
 
   @@map("users")
 }
@@ -80,11 +86,11 @@ model Role {
 }
 
 model UserRole {
-  userId    String   @map("user_id") @db.Uuid
-  roleId    String   @map("role_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  roleId     String   @map("role_id") @db.Uuid
   assignedAt DateTime @default(now()) @map("assigned_at") @db.Timestamptz(3)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   @@id([userId, roleId])
   @@index([roleId])
@@ -92,15 +98,15 @@ model UserRole {
 }
 
 model RefreshSession {
-  id         String    @id @default(uuid()) @db.Uuid
-  userId     String    @map("user_id") @db.Uuid
-  userAgent  String?   @map("user_agent")
-  familyId   String    @map("family_id") @db.Uuid
-  tokenHash  String    @map("token_hash")
-  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(3)
-  revokedAt  DateTime? @map("revoked_at") @db.Timestamptz(3)
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  userAgent String?   @map("user_agent")
+  familyId  String    @map("family_id") @db.Uuid
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, familyId])
   @@map("refresh_sessions")
@@ -140,20 +146,20 @@ model Area {
 }
 
 model Venue {
-  id               String          @id @default(uuid()) @db.Uuid
-  ownerId          String          @map("owner_id") @db.Uuid
-  areaId           String          @map("area_id") @db.Uuid
+  id               String               @id @default(uuid()) @db.Uuid
+  ownerId          String               @map("owner_id") @db.Uuid
+  areaId           String               @map("area_id") @db.Uuid
   name             String
   address          String
   description      String
-  latitude         Decimal         @db.Decimal(9, 6)
-  longitude        Decimal         @db.Decimal(9, 6)
-  status           VenueStatus     @default(DRAFT)
-  moderationReason String?         @map("moderation_reason")
-  createdAt        DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt        DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
-  owner            User            @relation(fields: [ownerId], references: [id], onDelete: Restrict)
-  area             Area            @relation(fields: [areaId], references: [id], onDelete: Restrict)
+  latitude         Decimal              @db.Decimal(9, 6)
+  longitude        Decimal              @db.Decimal(9, 6)
+  status           VenueStatus          @default(DRAFT)
+  moderationReason String?              @map("moderation_reason")
+  createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  owner            User                 @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  area             Area                 @relation(fields: [areaId], references: [id], onDelete: Restrict)
   images           VenueImage[]
   amenities        VenueAmenity[]
   offerings        VenueSportOffering[]
@@ -189,10 +195,10 @@ model Amenity {
 }
 
 model VenueAmenity {
-  venueId  String   @map("venue_id") @db.Uuid
+  venueId   String  @map("venue_id") @db.Uuid
   amenityId String  @map("amenity_id") @db.Uuid
-  venue    Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  amenity  Amenity  @relation(fields: [amenityId], references: [id], onDelete: Restrict)
+  venue     Venue   @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  amenity   Amenity @relation(fields: [amenityId], references: [id], onDelete: Restrict)
 
   @@id([venueId, amenityId])
   @@index([amenityId])
@@ -200,10 +206,10 @@ model VenueAmenity {
 }
 
 model Sport {
-  id        String                @id @default(uuid()) @db.Uuid
-  code      String                @unique
+  id        String               @id @default(uuid()) @db.Uuid
+  code      String               @unique
   name      String
-  isActive  Boolean               @default(true) @map("is_active")
+  isActive  Boolean              @default(true) @map("is_active")
   offerings VenueSportOffering[]
 
   @@map("sports")
@@ -231,12 +237,12 @@ model VenueSportOffering {
 }
 
 model Court {
-  id           String         @id @default(uuid()) @db.Uuid
-  offeringId   String         @map("offering_id") @db.Uuid
-  internalName String         @map("internal_name")
-  isActive     Boolean        @default(true) @map("is_active")
-  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  id           String             @id @default(uuid()) @db.Uuid
+  offeringId   String             @map("offering_id") @db.Uuid
+  internalName String             @map("internal_name")
+  isActive     Boolean            @default(true) @map("is_active")
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
   offering     VenueSportOffering @relation(fields: [offeringId], references: [id], onDelete: Restrict)
   closures     VenueClosure[]
   bookings     Booking[]
@@ -275,14 +281,14 @@ model VenueClosure {
 }
 
 model PricingRule {
-  id           String   @id @default(uuid()) @db.Uuid
-  offeringId   String   @map("offering_id") @db.Uuid
+  id           String             @id @default(uuid()) @db.Uuid
+  offeringId   String             @map("offering_id") @db.Uuid
   weekday      Int
-  startMinute  Int      @map("start_minute")
-  endMinute    Int      @map("end_minute")
-  pricePerSlot BigInt   @map("price_per_slot")
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  startMinute  Int                @map("start_minute")
+  endMinute    Int                @map("end_minute")
+  pricePerSlot BigInt             @map("price_per_slot")
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
   offering     VenueSportOffering @relation(fields: [offeringId], references: [id], onDelete: Cascade)
 
   @@index([offeringId, weekday])
@@ -290,27 +296,27 @@ model PricingRule {
 }
 
 model Booking {
-  id                        String           @id @default(uuid()) @db.Uuid
-  customerId                String           @map("customer_id") @db.Uuid
-  offeringId                String           @map("offering_id") @db.Uuid
-  courtId                   String           @map("court_id") @db.Uuid
-  startAt                   DateTime         @map("start_at") @db.Timestamptz(3)
-  endAt                     DateTime         @map("end_at") @db.Timestamptz(3)
+  id                        String                 @id @default(uuid()) @db.Uuid
+  customerId                String                 @map("customer_id") @db.Uuid
+  offeringId                String                 @map("offering_id") @db.Uuid
+  courtId                   String                 @map("court_id") @db.Uuid
+  startAt                   DateTime               @map("start_at") @db.Timestamptz(3)
+  endAt                     DateTime               @map("end_at") @db.Timestamptz(3)
   status                    BookingStatus
-  expiresAt                 DateTime?        @map("expires_at") @db.Timestamptz(3)
-  occupiesCourt             Boolean          @map("occupies_court")
-  priceAmount               BigInt           @map("price_amount")
-  currency                  String           @default("VND")
-  slotMinutes               Int              @default(30) @map("slot_minutes")
-  cancellationNoticeMinutes Int              @map("cancellation_notice_minutes")
-  confirmationModeSnapshot  ConfirmationMode @map("confirmation_mode_snapshot")
-  pricingBreakdown          Json             @map("pricing_breakdown")
-  cancellationReason        String?          @map("cancellation_reason")
-  createdAt                 DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt                 DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
-  customer                  User             @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  offering                  VenueSportOffering @relation(fields: [offeringId], references: [id], onDelete: Restrict)
-  court                     Court            @relation(fields: [courtId, offeringId], references: [id, offeringId], onDelete: Restrict)
+  expiresAt                 DateTime?              @map("expires_at") @db.Timestamptz(3)
+  occupiesCourt             Boolean                @map("occupies_court")
+  priceAmount               BigInt                 @map("price_amount")
+  currency                  String                 @default("VND")
+  slotMinutes               Int                    @default(30) @map("slot_minutes")
+  cancellationNoticeMinutes Int                    @map("cancellation_notice_minutes")
+  confirmationModeSnapshot  ConfirmationMode       @map("confirmation_mode_snapshot")
+  pricingBreakdown          Json                   @map("pricing_breakdown")
+  cancellationReason        String?                @map("cancellation_reason")
+  createdAt                 DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                 DateTime               @updatedAt @map("updated_at") @db.Timestamptz(3)
+  customer                  User                   @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  offering                  VenueSportOffering     @relation(fields: [offeringId], references: [id], onDelete: Restrict)
+  court                     Court                  @relation(fields: [courtId, offeringId], references: [id, offeringId], onDelete: Restrict)
   history                   BookingStatusHistory[]
 
   @@index([customerId, startAt])
@@ -321,29 +327,33 @@ model Booking {
 }
 
 model BookingStatusHistory {
-  id         String        @id @default(uuid()) @db.Uuid
-  bookingId  String        @map("booking_id") @db.Uuid
+  id         String         @id @default(uuid()) @db.Uuid
+  bookingId  String         @map("booking_id") @db.Uuid
   fromStatus BookingStatus? @map("from_status")
-  toStatus   BookingStatus @map("to_status")
-  actorType  ActorType     @map("actor_type")
-  actorId    String?       @map("actor_id") @db.Uuid
+  toStatus   BookingStatus  @map("to_status")
+  actorType  ActorType      @map("actor_type")
+  actorId    String?        @map("actor_id") @db.Uuid
   reason     String?
-  createdAt  DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
-  booking    Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  actor      User?         @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  createdAt  DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  booking    Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  actor      User?          @relation(fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([bookingId, createdAt])
   @@map("booking_status_history")
 }
 
 model Notification {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @map("user_id") @db.Uuid
-  type      String
-  payload   Json
-  readAt    DateTime? @map("read_at") @db.Timestamptz(3)
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String              @id @default(uuid()) @db.Uuid
+  userId         String              @map("user_id") @db.Uuid
+  type           String
+  payload        Json
+  readAt         DateTime?           @map("read_at") @db.Timestamptz(3)
+  emailStatus    EmailDeliveryStatus @default(PENDING) @map("email_status")
+  emailAttempts  Int                 @default(0) @map("email_attempts")
+  emailLastError String?             @map("email_last_error")
+  emailSentAt    DateTime?           @map("email_sent_at") @db.Timestamptz(3)
+  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, readAt, createdAt])
   @@map("notifications")

@@ -1,4 +1,4 @@
-# API examples — Phase 2 đến Phase 6
+# API examples — Phase 2 đến Phase 7
 
 Prefix là `http://localhost:3000/api/v1`. Swagger tương tác ở `http://localhost:3000/docs`.
 
@@ -34,4 +34,13 @@ curl -X POST -H 'Content-Type: application/json' \
   -H 'Idempotency-Key: booking-demo-0001' \
   -d '{"offeringId":"<offering-uuid>","startAt":"2026-09-14T01:00:00.000Z","endAt":"2026-09-14T02:00:00.000Z"}' \
   http://localhost:3000/api/v1/bookings
+
+# Đọc notification của chính customer; unread là boolean query string.
+curl -H 'Authorization: Bearer <access-token>' \
+  'http://localhost:3000/api/v1/notifications?unread=true&page=1&pageSize=20'
+
+curl -X POST -H 'Authorization: Bearer <access-token>' \
+  'http://localhost:3000/api/v1/notifications/<notification-uuid>/read'
 ```
+
+Create/transition booking trả kết quả ngay sau khi PostgreSQL commit. Email được worker gửi bất đồng bộ; mở `http://localhost:8025` để kiểm tra trong MailHog. Nếu SMTP tạm lỗi, booking vẫn giữ nguyên và BullMQ tự retry.

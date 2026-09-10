@@ -15,12 +15,22 @@ services:
       retries: 10
   redis:
     image: redis:8-alpine
+    command: redis-server --appendonly yes
     ports: ["127.0.0.1:6379:6379"]
+    volumes: ["redis-data:/data"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 10
+  migrate:
+    build: { context: ., dockerfile: docker/api.Dockerfile }
+    command: ["npm", "run", "db:migrate", "-w", "@sports-booking/api"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sports}:${POSTGRES_PASSWORD:-sports_local_password}@postgres:5432/${POSTGRES_DB:-sports_booking}?schema=public
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
   mailhog:
     image: mailhog/mailhog:v1.0.1
     ports: ["127.0.0.1:1025:1025", "127.0.0.1:8025:8025"]
@@ -55,6 +65,7 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
     healthcheck:
       test:
         [
@@ -74,12 +85,16 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-sports}:${POSTGRES_PASSWORD:-sports_local_password}@postgres:5432/${POSTGRES_DB:-sports_booking}?schema=public
       REDIS_HOST: redis
       REDIS_PORT: 6379
       MAIL_HOST: mailhog
       MAIL_PORT: 1025
+      MAIL_FROM: Đặt Sân <no-reply@sports.local>
+      OUTBOX_POLL_INTERVAL_MS: 500
+      OUTBOX_REPLAY_AFTER_SECONDS: 60
       WORKER_HEALTH_PORT: 3001
     healthcheck:
       test:
@@ -104,4 +119,5 @@ services:
       retries: 12
 volumes:
   postgres-data:
+  redis-data:
   minio-data:

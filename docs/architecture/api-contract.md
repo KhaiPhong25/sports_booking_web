@@ -63,6 +63,15 @@ Archive/disable hoặc tạo closure trả `409 RESOURCE_HAS_ACTIVE_BOOKINGS` n�
 
 Admin chỉ moderation, không CRUD catalog thay owner và không hủy booking mặc định.
 
+## Notification và xử lý nền
+
+Mutation booking tạo in-app notification và outbox event trong cùng PostgreSQL transaction. API không gọi SMTP trực tiếp. Outbox relay đưa event tới một trong hai BullMQ queue `notifications` và `booking-lifecycle`, dùng UUID của event làm `jobId` để enqueue lặp không tạo công việc logic mới. Event đã dispatch nhưng chưa có `processed_events` receipt sẽ được replay từ PostgreSQL sau một khoảng trễ; Redis local đồng thời bật AOF và volume.
+
+- Email retry tối đa 5 lần với exponential backoff bắt đầu từ 1 giây. Sau lần cuối, worker ghi terminal receipt bền vững để reconciliation không tạo lại một chu kỳ retry mới. Trạng thái giao nhận nằm trên notification (`PENDING`, `SENT`, `FAILED`); lỗi SMTP không rollback booking. Advisory lock serialize các delivery cùng notification. SMTP có semantics at-least-once: crash đúng lúc SMTP đã nhận nhưng receipt PostgreSQL chưa commit vẫn có thể tạo email trùng.
+- Booking `PENDING` có event expiration tại `expiresAt`; booking `CONFIRMED` có event completion tại `endAt`.
+- Lifecycle worker khóa booking row, kiểm tra expected status và ghi `processed_events`, status history, notification mới trong một transaction. Event chạy lại hoặc thua race với confirm/cancel trở thành no-op an toàn.
+- `GET /notifications` và mark-read luôn lấy `userId` từ bearer principal. ID của user khác trả `404`, không làm lộ resource.
+
 ## Error và idempotency
 
 Status code: `201` create, `200` query/action, `204` delete/logout, `400` validation/policy, `401` unauthenticated, `403` role/ownership, `404` hidden/absent, `409` duplicate/conflict/no capacity, `422` pricing coverage, `429` rate limit.

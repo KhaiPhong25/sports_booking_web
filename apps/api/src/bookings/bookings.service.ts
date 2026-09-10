@@ -14,6 +14,11 @@ import {
 import { createHash } from "node:crypto";
 import { PrismaService } from "../database/prisma.service";
 import {
+  BOOKING_COMPLETION_REQUESTED,
+  BOOKING_EXPIRATION_REQUESTED,
+  NotificationPublisher,
+} from "../notifications/notification-publisher";
+import {
   PricingEngine,
   PricingNotCoveredError,
 } from "../pricing/pricing-engine";
@@ -26,9 +31,17 @@ import { BookingView } from "./booking.types";
 
 const bookingInclude = {
   court: { select: { internalName: true } },
+  customer: { select: { email: true, displayName: true } },
   offering: {
     select: {
-      venue: { select: { id: true, name: true, ownerId: true } },
+      venue: {
+        select: {
+          id: true,
+          name: true,
+          ownerId: true,
+          owner: { select: { email: true, displayName: true } },
+        },
+      },
       sport: { select: { name: true } },
     },
   },
@@ -45,6 +58,7 @@ export class BookingsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly pricingEngine: PricingEngine,
+    private readonly notifications: NotificationPublisher,
   ) {}
 
   async availability(
@@ -239,6 +253,7 @@ export class BookingsService {
               },
               include: bookingInclude,
             });
+            await this.publishCreated(tx, booking);
             const view = this.toView(booking, false);
             await tx.idempotencyRecord.create({
               data: {
@@ -611,7 +626,7 @@ export class BookingsService {
     actorId: string | null,
     reason: string | null,
   ) {
-    return tx.booking.update({
+    const updated = await tx.booking.update({
       where: { id: booking.id },
       data: {
         status: to,
@@ -630,6 +645,8 @@ export class BookingsService {
       },
       include: bookingInclude,
     });
+    await this.publishTransition(tx, updated, actorId);
+    return updated;
   }
 
   private async expireStalePending(
@@ -644,7 +661,7 @@ export class BookingsService {
         occupiesCourt: true,
         expiresAt: { lte: now },
       },
-      select: { id: true },
+      include: bookingInclude,
     });
     for (const booking of stale) {
       const updated = await tx.booking.updateMany({
@@ -670,8 +687,107 @@ export class BookingsService {
             reason: "Pending hold elapsed",
           },
         });
+        await this.publishTransition(tx, booking, null, "EXPIRED");
       }
     }
+  }
+
+  private async publishCreated(
+    tx: Prisma.TransactionClient,
+    booking: BookingPayload,
+  ) {
+    const bookingId = booking.id;
+    const customerType =
+      booking.status === BookingStatus.PENDING
+        ? "BOOKING_PENDING"
+        : "BOOKING_CONFIRMED";
+    await this.notifications.publish(tx, {
+      userId: booking.customerId,
+      type: customerType,
+      payload: this.notificationPayload(booking),
+      email: {
+        to: booking.customer.email,
+        subject:
+          booking.status === BookingStatus.PENDING
+            ? "Yêu cầu đặt sân đang chờ duyệt"
+            : "Booking sân đã được xác nhận",
+        text: `${booking.customer.displayName}, booking tại ${booking.offering.venue.name} có trạng thái ${booking.status}.`,
+      },
+    });
+    await this.notifications.publish(tx, {
+      userId: booking.offering.venue.ownerId,
+      type: "BOOKING_CREATED",
+      payload: this.notificationPayload(booking),
+      email: {
+        to: booking.offering.venue.owner.email,
+        subject: "Có booking mới tại địa điểm của bạn",
+        text: `${booking.offering.venue.owner.displayName}, có booking mới tại ${booking.offering.venue.name}.`,
+      },
+    });
+    await this.notifications.scheduleLifecycle(tx, {
+      bookingId,
+      eventType:
+        booking.status === BookingStatus.PENDING
+          ? BOOKING_EXPIRATION_REQUESTED
+          : BOOKING_COMPLETION_REQUESTED,
+      availableAt:
+        booking.status === BookingStatus.PENDING
+          ? booking.expiresAt!
+          : booking.endAt,
+    });
+  }
+
+  private async publishTransition(
+    tx: Prisma.TransactionClient,
+    booking: BookingPayload,
+    actorId: string | null,
+    status: BookingStatusValue = booking.status,
+  ) {
+    if (status === BookingStatus.CONFIRMED) {
+      await this.notifications.scheduleLifecycle(tx, {
+        bookingId: booking.id,
+        eventType: BOOKING_COMPLETION_REQUESTED,
+        availableAt: booking.endAt,
+      });
+    }
+    const notifyOwner =
+      status === BookingStatus.CANCELLED && actorId === booking.customerId;
+    const recipient = notifyOwner
+      ? {
+          id: booking.offering.venue.ownerId,
+          email: booking.offering.venue.owner.email,
+          name: booking.offering.venue.owner.displayName,
+        }
+      : {
+          id: booking.customerId,
+          email: booking.customer.email,
+          name: booking.customer.displayName,
+        };
+    await this.notifications.publish(tx, {
+      userId: recipient.id,
+      type: `BOOKING_${status}`,
+      payload: this.notificationPayload(booking, status),
+      email: {
+        to: recipient.email,
+        subject: `Cập nhật booking: ${status}`,
+        text: `${recipient.name}, booking tại ${booking.offering.venue.name} đã chuyển sang ${status}.`,
+      },
+    });
+  }
+
+  private notificationPayload(
+    booking: BookingPayload,
+    status: BookingStatusValue = booking.status,
+  ): Prisma.InputJsonObject {
+    return {
+      bookingId: booking.id,
+      venueId: booking.offering.venue.id,
+      venueName: booking.offering.venue.name,
+      sportName: booking.offering.sport.name,
+      startAt: booking.startAt.toISOString(),
+      endAt: booking.endAt.toISOString(),
+      status,
+    };
   }
 
   private async loadPublicContext(

@@ -11,6 +11,7 @@ import { VenuesModule } from "./venues/venues.module";
 import { SchedulingModule } from "./scheduling/scheduling.module";
 import { PricingModule } from "./pricing/pricing.module";
 import { BookingsModule } from "./bookings/bookings.module";
+import { NotificationsModule } from "./notifications/notifications.module";
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { BookingsModule } from "./bookings/bookings.module";
     SchedulingModule,
     PricingModule,
     BookingsModule,
+    NotificationsModule,
   ],
   controllers: [HealthController],
   providers: [

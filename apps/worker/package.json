@@ -3,19 +3,27 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
+    "prebuild": "npm run build -w @sports-booking/shared",
     "build": "tsc -p tsconfig.json",
     "dev": "ts-node src/main.ts",
     "lint": "eslint \"src/**/*.ts\"",
+    "pretest": "npm run build -w @sports-booking/shared",
     "test": "jest --runInBand",
+    "pretypecheck": "npm run build -w @sports-booking/shared",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@sports-booking/shared": "^0.1.0",
     "bullmq": "^5.58.5",
-    "ioredis": "^5.7.0"
+    "ioredis": "^5.7.0",
+    "nodemailer": "^10.0.3",
+    "pg": "^8.23.0"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^24.3.1",
+    "@types/nodemailer": "^8.0.1",
+    "@types/pg": "^8.23.1",
     "@typescript-eslint/eslint-plugin": "^8.42.0",
     "@typescript-eslint/parser": "^8.42.0",
     "eslint": "^9.35.0",

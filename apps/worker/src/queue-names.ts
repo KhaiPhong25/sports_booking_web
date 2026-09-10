@@ -1,4 +1,1 @@
-export const QUEUE_NAMES = Object.freeze({
-  notifications: "notifications",
-  bookingLifecycle: "booking-lifecycle",
-});
+export { QUEUE_NAMES } from "@sports-booking/shared";

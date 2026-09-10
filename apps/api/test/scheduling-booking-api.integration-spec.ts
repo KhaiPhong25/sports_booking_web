@@ -31,6 +31,7 @@ describeDatabase("Phase 5-6 API with PostgreSQL", () => {
   let otherOwnerToken: string;
   let customerToken: string;
   let targetCourtId: string;
+  let bookingId: string;
   const now = new Date();
   now.setUTCMinutes(0, 0, 0);
   const startAt = new Date(now);
@@ -128,6 +129,23 @@ describeDatabase("Phase 5-6 API with PostgreSQL", () => {
 
   afterAll(async () => {
     await app.close();
+    const notificationIds = (
+      await prisma.notification.findMany({
+        where: { userId: { in: [ids.owner, ids.customer] } },
+        select: { id: true },
+      })
+    ).map(({ id }) => id);
+    await prisma.outboxEvent.deleteMany({
+      where: {
+        OR: [
+          ...(bookingId ? [{ aggregateId: bookingId }] : []),
+          { aggregateId: { in: notificationIds } },
+        ],
+      },
+    });
+    await prisma.notification.deleteMany({
+      where: { userId: { in: [ids.owner, ids.customer] } },
+    });
     await prisma.booking.deleteMany({ where: { offeringId: ids.offering } });
     await prisma.idempotencyRecord.deleteMany({
       where: { actorId: ids.customer },
@@ -226,6 +244,29 @@ describeDatabase("Phase 5-6 API with PostgreSQL", () => {
       expect.objectContaining({ status: "PENDING", priceAmount: 100_000 }),
     );
     expect(created.body.courtId).toBeUndefined();
+    bookingId = created.body.id as string;
+    expect(
+      await prisma.notification.count({
+        where: {
+          userId: { in: [ids.owner, ids.customer] },
+          type: { in: ["BOOKING_CREATED", "BOOKING_PENDING"] },
+        },
+      }),
+    ).toBe(2);
+    expect(
+      await prisma.outboxEvent.count({
+        where: { eventType: "NOTIFICATION_EMAIL_REQUESTED" },
+      }),
+    ).toBeGreaterThanOrEqual(2);
+    expect(
+      await prisma.outboxEvent.count({
+        where: {
+          aggregateId: bookingId,
+          eventType: "BOOKING_EXPIRATION_REQUESTED",
+          availableAt: created.body.expiresAt,
+        },
+      }),
+    ).toBe(1);
 
     await request(app.getHttpServer())
       .post(`/api/v1/owner/venues/${ids.venue}/closures`)

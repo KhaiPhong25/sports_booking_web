@@ -1,4 +1,8 @@
-import { createWorkerRuntime, WorkerHandle } from "./runtime";
+import {
+  createWorkerRuntime,
+  readPositiveInteger,
+  WorkerHandle,
+} from "./runtime";
 
 class FakeWorker implements WorkerHandle {
   closed = false;
@@ -26,6 +30,16 @@ class FakeWorker implements WorkerHandle {
 }
 
 describe("worker runtime", () => {
+  it("fails fast for unsafe numeric worker configuration", () => {
+    expect(() => readPositiveInteger("NaN", "POLL", 500, 50)).toThrow(
+      "POLL must be an integer greater than or equal to 50",
+    );
+    expect(() => readPositiveInteger("0", "POLL", 500, 50)).toThrow(
+      "POLL must be an integer greater than or equal to 50",
+    );
+    expect(readPositiveInteger(undefined, "POLL", 500, 50)).toBe(500);
+  });
+
   it("starts one long-running handle for each application queue", () => {
     const runtime = createWorkerRuntime(
       (queueName) => new FakeWorker(queueName),
@@ -46,6 +60,17 @@ describe("worker runtime", () => {
 
     await runtime.close();
     expect(handles.every((handle) => handle.closed)).toBe(true);
+  });
+
+  it("closes auxiliary resources during graceful shutdown", async () => {
+    const closeAuxiliary = jest.fn().mockResolvedValue(undefined);
+    const runtime = createWorkerRuntime(
+      (queueName) => new FakeWorker(queueName),
+      closeAuxiliary,
+    );
+
+    await runtime.close();
+    expect(closeAuxiliary).toHaveBeenCalledTimes(1);
   });
 
   it("reports ready only after all BullMQ workers connect", async () => {

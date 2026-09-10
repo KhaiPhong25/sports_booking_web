@@ -9,6 +9,8 @@ RUN npm ci
 
 FROM dependencies AS build
 COPY apps/worker apps/worker
+COPY packages/shared packages/shared
+RUN npm run build -w @sports-booking/shared
 RUN npm run build -w @sports-booking/worker
 
 FROM node:24-bookworm-slim AS runtime
@@ -17,6 +19,8 @@ WORKDIR /app
 COPY --from=dependencies /workspace/node_modules ./node_modules
 COPY package.json ./package.json
 COPY apps/worker/package.json ./apps/worker/package.json
+COPY packages/shared/package.json ./packages/shared/package.json
+COPY --from=build /workspace/packages/shared/dist ./packages/shared/dist
 COPY --from=build /workspace/apps/worker/dist ./apps/worker/dist
 USER node
 CMD ["node", "apps/worker/dist/main.js"]

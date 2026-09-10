@@ -30,6 +30,8 @@ const ids = {
   booking: "60000000-0000-4000-8000-000000000001",
   pendingBooking: "60000000-0000-4000-8000-000000000002",
   cancelledBooking: "60000000-0000-4000-8000-000000000003",
+  completionEvent: "90000000-0000-4000-8000-000000000001",
+  expirationEvent: "90000000-0000-4000-8000-000000000002",
 };
 
 async function upsertUser(
@@ -321,13 +323,14 @@ async function main() {
   });
   const pendingStart = new Date(startAt.getTime() + 24 * 60 * 60 * 1000);
   const pendingEnd = new Date(pendingStart.getTime() + 60 * 60 * 1000);
+  const pendingExpiresAt = new Date(Date.now() + 30 * 60 * 1000);
   await prisma.booking.upsert({
     where: { id: ids.pendingBooking },
     update: {
       startAt: pendingStart,
       endAt: pendingEnd,
       status: BookingStatus.PENDING,
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      expiresAt: pendingExpiresAt,
       occupiesCourt: true,
     },
     create: {
@@ -338,7 +341,7 @@ async function main() {
       startAt: pendingStart,
       endAt: pendingEnd,
       status: BookingStatus.PENDING,
-      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      expiresAt: pendingExpiresAt,
       occupiesCourt: true,
       priceAmount: 120000,
       cancellationNoticeMinutes: 120,
@@ -378,6 +381,45 @@ async function main() {
       cancellationReason: "Booking demo đã hủy",
     },
   });
+  const previousLifecycleEvents = await prisma.outboxEvent.findMany({
+    where: {
+      aggregateId: { in: [ids.booking, ids.pendingBooking] },
+      eventType: {
+        in: ["BOOKING_COMPLETION_REQUESTED", "BOOKING_EXPIRATION_REQUESTED"],
+      },
+    },
+    select: { id: true },
+  });
+  await prisma.processedEvent.deleteMany({
+    where: {
+      eventId: { in: previousLifecycleEvents.map(({ id }) => id) },
+    },
+  });
+  await prisma.outboxEvent.deleteMany({
+    where: { id: { in: previousLifecycleEvents.map(({ id }) => id) } },
+  });
+  await Promise.all([
+    prisma.outboxEvent.create({
+      data: {
+        id: ids.completionEvent,
+        aggregateType: "Booking",
+        aggregateId: ids.booking,
+        eventType: "BOOKING_COMPLETION_REQUESTED",
+        payload: { bookingId: ids.booking },
+        availableAt: endAt,
+      },
+    }),
+    prisma.outboxEvent.create({
+      data: {
+        id: ids.expirationEvent,
+        aggregateType: "Booking",
+        aggregateId: ids.pendingBooking,
+        eventType: "BOOKING_EXPIRATION_REQUESTED",
+        payload: { bookingId: ids.pendingBooking },
+        availableAt: pendingExpiresAt,
+      },
+    }),
+  ]);
 }
 
 main()

@@ -8,6 +8,7 @@ import { randomUUID } from "node:crypto";
 import { BookingsService } from "../src/bookings/bookings.service";
 import { PrismaService } from "../src/database/prisma.service";
 import { PricingEngine } from "../src/pricing/pricing-engine";
+import { NotificationPublisher } from "../src/notifications/notification-publisher";
 import { toBusinessDateTime } from "../src/scheduling/business-time";
 import { PrismaVenueRepository } from "../src/venues/prisma-venue.repository";
 import { VenuesService } from "../src/venues/venues.service";
@@ -18,7 +19,11 @@ const describeDatabase = databaseUrl ? describe : describe.skip;
 describeDatabase("concurrency-safe bookings with PostgreSQL", () => {
   const prisma = new PrismaClient({ datasourceUrl: databaseUrl });
   const servicePrisma = new PrismaService({ datasourceUrl: databaseUrl });
-  const service = new BookingsService(servicePrisma, new PricingEngine());
+  const service = new BookingsService(
+    servicePrisma,
+    new PricingEngine(),
+    new NotificationPublisher(),
+  );
   const venues = new VenuesService(new PrismaVenueRepository(servicePrisma));
   const suffix = randomUUID();
   const ids = {
