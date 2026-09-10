@@ -11,7 +11,9 @@ Mọi endpoint nằm dưới `/api/v1`; Swagger UI ở `/docs`, OpenAPI JSON ở
 | POST   | `/auth/refresh`                       | refresh cookie                                    | access token mới + cookie xoay vòng       |
 | POST   | `/auth/logout`                        | refresh cookie                                    | `204`                                     |
 | GET    | `/sports`                             | —                                                 | sport list                                |
-| GET    | `/areas`                              | `parentId?`                                       | area list                                 |
+| GET    | `/areas`                              | —                                                 | area list                                 |
+| GET    | `/amenities`                          | —                                                 | amenity list                              |
+| GET    | `/catalog`                            | —                                                 | sports + areas + amenities                |
 | GET    | `/venues`                             | `sportId,areaId,startAt,endAt,page,pageSize,sort` | public venue results đủ capacity          |
 | GET    | `/venues/:venueId`                    | —                                                 | approved venue detail                     |
 | GET    | `/offerings/:offeringId/availability` | `startAt,endAt`                                   | `{available,capacity}`                    |
@@ -32,17 +34,17 @@ Public không được gọi `POST /bookings`.
 | GET    | `/notifications`              | `unread?,page,pageSize`                                | notification list          |
 | POST   | `/notifications/:id/read`     | —                                                      | notification               |
 | POST   | `/owner-applications`         | `{businessName,experience}`                            | application                |
-| GET    | `/owner-applications/me`      | —                                                      | application gần nhất       |
+| GET    | `/owner-applications`         | `page,pageSize`                                        | applications của principal |
 
 ## Owner
 
 Owner CRUD đều kiểm tra resource thuộc venue của principal.
 
-- `GET /owner/venues`; `POST /owner/venues`; `GET|PATCH /owner/venues/:venueId`; `POST /owner/venues/:venueId/archive`.
-- PATCH venue `APPROVED` chuyển ngay sang `PENDING_APPROVAL`; `POST /owner/venues/:venueId/submit` chỉ chuyển draft/rejected sang `PENDING_APPROVAL`.
-- `POST /owner/venues/:venueId/images` multipart; `DELETE /owner/venues/:venueId/images/:imageId`.
-- `GET|POST /owner/venues/:venueId/offerings`; `GET|PATCH /owner/offerings/:offeringId`; `POST /owner/offerings/:offeringId/archive`.
-- `GET|POST /owner/offerings/:offeringId/courts`; `PATCH /owner/courts/:courtId`; `POST /owner/courts/:courtId/activate|deactivate`.
+- `GET /owner/venues`; `POST /owner/venues`; `GET|PATCH|DELETE /owner/venues/:venueId`.
+- Venue mới là `PENDING_APPROVAL`; PATCH venue `APPROVED` chuyển ngay về `PENDING_APPROVAL`.
+- `PUT /owner/venues/:venueId/amenities`; `POST /owner/venues/:venueId/images` multipart.
+- `POST /owner/venues/:venueId/offerings`; `PATCH /owner/offerings/:offeringId`.
+- `POST /owner/offerings/:offeringId/courts`; `PATCH /owner/courts/:courtId`; `PATCH /owner/courts/:courtId/active`.
 - `GET|PUT /owner/venues/:venueId/operating-hours`; PUT body `{windows:[{weekday,startMinute,endMinute}]}`.
 - `GET|POST /owner/venues/:venueId/closures`; `PATCH|DELETE /owner/closures/:closureId`.
 - `GET|POST /owner/offerings/:offeringId/pricing-rules`; `PATCH|DELETE /owner/pricing-rules/:ruleId`.
@@ -54,7 +56,7 @@ Archive/disable hoặc tạo closure trả `409 RESOURCE_HAS_ACTIVE_BOOKINGS` n�
 ## Admin
 
 - `GET /admin/users?query=&locked=&role=&page=&pageSize=`.
-- `POST /admin/users/:userId/lock` body `{reason}`; `POST /admin/users/:userId/unlock` body `{reason}`.
+- `PATCH /admin/users/:userId/lock`; `PATCH /admin/users/:userId/unlock`.
 - `GET /admin/owner-applications?status=&page=&pageSize=`; `POST /admin/owner-applications/:id/approve` (empty); `/reject` body `{reason}`.
 - `GET /admin/venues?status=&page=&pageSize=`; `POST /admin/venues/:id/approve` (empty); `/reject` và `/hide` body `{reason}`.
 - `GET /admin/audit-logs?action=&actorId=&resourceType=&resourceId=&page=&pageSize=&sort=`.

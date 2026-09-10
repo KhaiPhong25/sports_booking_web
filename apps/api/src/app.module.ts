@@ -3,10 +3,26 @@ import { ConfigModule } from "@nestjs/config";
 import { validateEnvironment } from "./config/environment";
 import { HealthController } from "./health/health.controller";
 import { ReadinessService } from "./health/readiness.service";
+import { DatabaseModule } from "./database/database.module";
+import { AuthModule } from "./auth/auth.module";
+import { UsersModule } from "./users/users.module";
+import { OwnerApplicationsModule } from "./owner-applications/owner-applications.module";
+import { VenuesModule } from "./venues/venues.module";
+import { SchedulingModule } from "./scheduling/scheduling.module";
+import { PricingModule } from "./pricing/pricing.module";
+import { BookingsModule } from "./bookings/bookings.module";
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
+    DatabaseModule,
+    AuthModule,
+    UsersModule,
+    OwnerApplicationsModule,
+    VenuesModule,
+    SchedulingModule,
+    PricingModule,
+    BookingsModule,
   ],
   controllers: [HealthController],
   providers: [

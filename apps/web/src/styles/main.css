@@ -42,6 +42,120 @@ nav a:focus-visible {
   margin: 0 auto;
   padding: clamp(4rem, 12vw, 9rem) clamp(1rem, 5vw, 5rem);
 }
+.page-card {
+  width: min(42rem, calc(100% - 2rem));
+  margin: 3rem auto;
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  background: #fff;
+  border: 1px solid #d9e2dc;
+  border-radius: 1rem;
+}
+.auth-card {
+  max-width: 34rem;
+}
+.stack {
+  display: grid;
+  gap: 0.75rem;
+}
+label {
+  font-weight: 700;
+}
+input,
+select,
+textarea,
+button {
+  min-height: 2.75rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #85958b;
+  border-radius: 0.5rem;
+  font: inherit;
+}
+button {
+  color: #fff;
+  background: #146c43;
+  border-color: #146c43;
+  cursor: pointer;
+}
+button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: 3px solid #ffbf47;
+  outline-offset: 2px;
+}
+.form-status {
+  min-height: 1.5rem;
+}
+.review-card {
+  padding: 1rem 0;
+  border-top: 1px solid #d9e2dc;
+}
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+.secondary {
+  color: #72302c;
+  background: #fff;
+  border-color: #72302c;
+}
+.catalog {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2rem clamp(1rem, 5vw, 5rem);
+}
+.venue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+.venue-card,
+.inventory-group,
+.booking-card,
+.booking-widget {
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #d9e2dc;
+  border-radius: 0.75rem;
+}
+.form-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.search-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  align-items: end;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #d9e2dc;
+  border-radius: 0.75rem;
+}
+.search-form label {
+  display: grid;
+  gap: 0.35rem;
+}
+.booking-card {
+  margin: 1rem 0;
+}
+.booking-widget {
+  margin-top: 1rem;
+}
+.court-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
 .hero h1 {
   max-width: 17ch;
   font-size: clamp(2.3rem, 7vw, 5.5rem);
