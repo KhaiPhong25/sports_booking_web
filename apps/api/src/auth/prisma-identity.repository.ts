@@ -67,6 +67,51 @@ export class PrismaIdentityRepository implements IdentityRepository {
     return user ? mapUser(user) : null;
   }
 
+  async listUsers(
+    skip: number,
+    take: number,
+    filters: { query?: string; locked?: boolean; role?: RoleName } = {},
+  ) {
+    const query = filters.query?.trim();
+    const where = {
+      ...(typeof filters.locked === "boolean"
+        ? { isLocked: filters.locked }
+        : {}),
+      ...(filters.role
+        ? {
+            roles: {
+              some: { role: { name: filters.role as PrismaRoleName } },
+            },
+          }
+        : {}),
+      ...(query
+        ? {
+            OR: [
+              { email: { contains: query, mode: "insensitive" as const } },
+              {
+                displayName: {
+                  contains: query,
+                  mode: "insensitive" as const,
+                },
+              },
+              { phone: { contains: query } },
+            ],
+          }
+        : {}),
+    } satisfies Prisma.UserWhereInput;
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        where,
+        include: userWithRoles,
+        orderBy: [{ isLocked: "desc" }, { displayName: "asc" }, { id: "asc" }],
+        skip,
+        take,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+    return { items: items.map(mapUser), total };
+  }
+
   async updateProfile(
     id: string,
     input: { displayName?: string; phone?: string },

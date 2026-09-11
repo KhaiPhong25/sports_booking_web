@@ -27,9 +27,10 @@ export interface OwnerApplicationRepository {
     skip: number,
     take: number,
   ): Promise<{ items: OwnerApplicationRecord[]; total: number }>;
-  listPending(
+  listForAdmin(
     skip: number,
     take: number,
+    status?: OwnerApplicationStatus,
   ): Promise<{ items: OwnerApplicationRecord[]; total: number }>;
   review(
     id: string,

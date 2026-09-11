@@ -39,10 +39,15 @@ export class OwnerApplicationsService {
     return { ...result, page, pageSize };
   }
 
-  async pending(page = 1, pageSize = 20) {
-    const result = await this.repository.listPending(
+  async adminList(
+    status?: "PENDING" | "APPROVED" | "REJECTED",
+    page = 1,
+    pageSize = 20,
+  ) {
+    const result = await this.repository.listForAdmin(
       (page - 1) * pageSize,
       pageSize,
+      status,
     );
     return { ...result, page, pageSize };
   }

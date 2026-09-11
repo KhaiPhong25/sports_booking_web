@@ -32,6 +32,30 @@ export class InMemoryIdentityRepository implements IdentityRepository {
     return this.users.get(id) ?? null;
   }
 
+  async listUsers(
+    skip: number,
+    take: number,
+    filters: { query?: string; locked?: boolean; role?: RoleName } = {},
+  ) {
+    const query = filters.query?.trim().toLocaleLowerCase("vi");
+    const all = [...this.users.values()]
+      .filter(
+        (user) =>
+          (typeof filters.locked !== "boolean" ||
+            user.isLocked === filters.locked) &&
+          (!filters.role || user.roles.includes(filters.role)) &&
+          (!query ||
+            [user.email, user.displayName, user.phone].some((value) =>
+              value.toLocaleLowerCase("vi").includes(query),
+            )),
+      )
+      .sort((left, right) => left.displayName.localeCompare(right.displayName));
+    return {
+      items: structuredClone(all.slice(skip, skip + take)),
+      total: all.length,
+    };
+  }
+
   async updateProfile(
     id: string,
     input: { displayName?: string; phone?: string },

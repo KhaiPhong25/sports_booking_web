@@ -15,7 +15,7 @@ import { Roles } from "../common/auth/roles.decorator";
 import { RolesGuard } from "../common/auth/roles.guard";
 import { RejectOwnerApplicationDto } from "./dto/reject-owner-application.dto";
 import { OwnerApplicationsService } from "./owner-applications.service";
-import { PaginationDto } from "../common/pagination.dto";
+import { AdminOwnerApplicationsQueryDto } from "./dto/admin-owner-applications-query.dto";
 
 @ApiTags("admin-owner-applications")
 @ApiBearerAuth()
@@ -26,8 +26,12 @@ export class AdminOwnerApplicationsController {
   constructor(private readonly applications: OwnerApplicationsService) {}
 
   @Get()
-  pending(@Query() query: PaginationDto) {
-    return this.applications.pending(query.page, query.pageSize);
+  list(@Query() query: AdminOwnerApplicationsQueryDto) {
+    return this.applications.adminList(
+      query.status,
+      query.page,
+      query.pageSize,
+    );
   }
 
   @Post(":id/approve")

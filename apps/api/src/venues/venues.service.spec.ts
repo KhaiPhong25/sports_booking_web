@@ -91,6 +91,39 @@ describe("VenuesService", () => {
     );
   });
 
+  it("lets administrators filter venues by moderation status", async () => {
+    const repository = new InMemoryVenueRepository();
+    const service = new VenuesService(repository);
+    const approved = await service.create("owner-1", venueInput);
+    await service.moderate("admin-1", approved.id, "APPROVED", null);
+    await service.create("owner-2", { ...venueInput, name: "Sân Đang Chờ" });
+
+    const result = await service.adminList("APPROVED", 1, 20);
+
+    expect(result.total).toBe(1);
+    expect(result.items).toEqual([
+      expect.objectContaining({ id: approved.id, status: "APPROVED" }),
+    ]);
+  });
+
+  it("rejects moderation transitions that bypass the venue workflow", async () => {
+    const repository = new InMemoryVenueRepository();
+    const service = new VenuesService(repository);
+    const venue = await service.create("owner-1", venueInput);
+    await service.moderate("admin-1", venue.id, "APPROVED", null);
+    await service.moderate(
+      "admin-1",
+      venue.id,
+      "HIDDEN",
+      "Tạm ẩn để xác minh lại thông tin địa điểm",
+    );
+
+    await expect(
+      service.moderate("admin-1", venue.id, "APPROVED", null),
+    ).rejects.toThrow("transition");
+    expect((await repository.findVenue(venue.id))?.status).toBe("HIDDEN");
+  });
+
   it("refuses to deactivate a court that has a future occupying booking", async () => {
     const repository = new InMemoryVenueRepository();
     const service = new VenuesService(repository);

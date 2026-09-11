@@ -93,10 +93,11 @@ export class VenuesService {
     };
   }
 
-  async pendingList(page = 1, pageSize = 20) {
-    const result = await this.repository.pendingVenues(
+  async adminList(status?: VenueStatus, page = 1, pageSize = 20) {
+    const result = await this.repository.adminVenues(
       (page - 1) * pageSize,
       pageSize,
+      status,
     );
     return { ...result, page, pageSize };
   }
@@ -236,17 +237,27 @@ export class VenuesService {
   ) {
     const venue = await this.repository.findVenue(id);
     if (!venue) throw new NotFoundException("Venue not found");
+    const expectedStatus =
+      status === "HIDDEN" ? "APPROVED" : "PENDING_APPROVAL";
+    if (venue.status !== expectedStatus) {
+      throw new BadRequestException("Invalid venue moderation transition");
+    }
     if (status !== "APPROVED" && (!reason || reason.trim().length < 10)) {
       throw new BadRequestException(
         "Moderation reason must contain at least 10 characters",
       );
     }
-    return this.repository.moderateVenue(
+    const updated = await this.repository.moderateVenue(
       id,
       adminId,
       status,
       reason?.trim() ?? null,
+      expectedStatus,
     );
+    if (!updated) {
+      throw new ConflictException("Venue status changed during moderation");
+    }
+    return updated;
   }
 
   referenceData() {

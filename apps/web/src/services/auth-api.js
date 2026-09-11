@@ -1,5 +1,6 @@
 const apiBase = "/api/v1";
 let accessToken = null;
+let currentUser = null;
 
 async function request(path, options = {}) {
   const response = await fetch(`${apiBase}${path}`, {
@@ -12,6 +13,7 @@ async function request(path, options = {}) {
   if (!response.ok)
     throw new Error(body?.message ?? "Không thể kết nối máy chủ");
   if (body?.accessToken) accessToken = body.accessToken;
+  if (body?.user) currentUser = body.user;
   return body;
 }
 
@@ -32,6 +34,8 @@ export const authApi = {
   logout: async () => {
     await request("/auth/logout", { method: "POST" });
     accessToken = null;
+    currentUser = null;
   },
   token: () => accessToken,
+  user: () => currentUser,
 };

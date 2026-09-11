@@ -73,7 +73,7 @@ async function mockCustomerApi(page) {
       loggedIn = true;
       return json({
         accessToken: "customer-token",
-        user: { id: "customer-1", role: "CUSTOMER" },
+        user: { id: "customer-1", roles: ["CUSTOMER"] },
       });
     }
     if (path === "/bookings" && method === "POST") {

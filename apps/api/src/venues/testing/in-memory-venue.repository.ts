@@ -61,9 +61,9 @@ export class InMemoryVenueRepository implements VenueRepository {
     return { items: all.slice(skip, skip + take), total: all.length };
   }
 
-  async pendingVenues(skip: number, take: number) {
+  async adminVenues(skip: number, take: number, status?: VenueStatus) {
     const all = [...this.venues.values()]
-      .filter((venue) => venue.status === "PENDING_APPROVAL")
+      .filter((venue) => !status || venue.status === status)
       .map((venue) => this.withInventory(venue));
     return { items: all.slice(skip, skip + take), total: all.length };
   }
@@ -90,9 +90,11 @@ export class InMemoryVenueRepository implements VenueRepository {
     adminId: string,
     status: VenueStatus,
     reason: string | null,
-  ): Promise<VenueRecord> {
+    expectedStatus: VenueStatus,
+  ): Promise<VenueRecord | null> {
     const venue = this.venues.get(id);
     if (!venue) throw new Error("Venue not found");
+    if (venue.status !== expectedStatus) return null;
     venue.status = status;
     venue.moderationReason = reason;
     this.audits.push({

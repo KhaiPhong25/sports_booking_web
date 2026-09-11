@@ -12,6 +12,7 @@ import { SchedulingModule } from "./scheduling/scheduling.module";
 import { PricingModule } from "./pricing/pricing.module";
 import { BookingsModule } from "./bookings/bookings.module";
 import { NotificationsModule } from "./notifications/notifications.module";
+import { AuditLogsModule } from "./audit-logs/audit-logs.module";
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { NotificationsModule } from "./notifications/notifications.module";
     PricingModule,
     BookingsModule,
     NotificationsModule,
+    AuditLogsModule,
   ],
   controllers: [HealthController],
   providers: [

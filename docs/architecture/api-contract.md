@@ -65,6 +65,7 @@ Archive/disable hoặc tạo closure trả `409 RESOURCE_HAS_ACTIVE_BOOKINGS` n�
 - `GET /admin/audit-logs?action=&actorId=&resourceType=&resourceId=&page=&pageSize=&sort=`.
 
 Admin chỉ moderation, không CRUD catalog thay owner và không hủy booking mặc định.
+Approve/reject venue chỉ hợp lệ từ `PENDING_APPROVAL`; hide chỉ hợp lệ từ `APPROVED`. Quyết định dùng compare-and-set theo status nguồn nên hai admin thao tác đồng thời chỉ có một quyết định được commit và ghi audit.
 
 ## Notification và xử lý nền
 

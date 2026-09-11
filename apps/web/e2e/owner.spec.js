@@ -76,7 +76,7 @@ async function mockOwnerApi(page) {
     if (path === "/auth/refresh" && method === "POST") {
       return json({
         accessToken: "owner-token",
-        user: { id: "owner-1", role: "OWNER" },
+        user: { id: "owner-1", roles: ["CUSTOMER", "OWNER"] },
       });
     }
     if (path === "/catalog" && method === "GET") return json(catalog);

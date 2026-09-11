@@ -4,7 +4,7 @@ Nền tảng tìm kiếm và đặt sân thể thao tại Thành phố Hồ Chí
 
 ## Trạng thái
 
-Dự án đã hoàn thành đến Phase 9: nền tảng, authentication/users, owner application, venue/court inventory, lịch/giá, booking an toàn đồng thời, queue/notifications, trải nghiệm web cho customer và khu vực vận hành đầy đủ cho owner.
+Dự án đã hoàn thành đến Phase 10: nền tảng, authentication/users, owner application, venue/court inventory, lịch/giá, booking an toàn đồng thời, queue/notifications, trải nghiệm web cho customer/owner và khu vực quản trị đầy đủ cho admin.
 
 - `apps/api`: NestJS REST API, prefix `/api/v1`, Swagger `/docs`.
 - `apps/worker`: outbox relay và BullMQ workers riêng cho email, hết hạn và hoàn tất booking.
@@ -70,17 +70,18 @@ Ba lệnh `dev:*` chạy ở ba terminal riêng. Để khởi động toàn stac
 
 `test:integration` cần `TEST_DATABASE_URL` trỏ tới database test đã migrate. Xem kiến trúc tại `docs/architecture/design-spec.md` và ghi chú học tập theo thứ tự trong `docs/learning-notes/`.
 
-## Luồng đã có đến Phase 9
+## Luồng đã có đến Phase 10
 
 - Public không cần đăng nhập: tìm theo môn/khu vực/ngày/giờ, xem sân còn trống, chi tiết venue, tiện ích, chế độ xác nhận, báo giá và bản đồ Leaflet. Khi bấm đặt sân, người chưa đăng nhập được đưa tới trang đăng nhập rồi quay lại đúng venue.
 - Customer đã đăng nhập: tạo booking với `Idempotency-Key`, xem danh sách có filter, mở chi tiết, hủy theo notice snapshot, xem/lọc/đánh dấu đã đọc notification.
 - Owner: xem dashboard và lịch booking theo tuần; lọc danh sách, mở chi tiết cùng thông tin liên hệ customer; confirm/reject/cancel/reassign booking; tạo, sửa, lưu trữ venue; quản lý offering/court, operating hours, closures và pricing.
+- Admin: xem dashboard moderation; tìm/lọc/khóa/mở khóa user; lọc và xét hồ sơ owner; duyệt, từ chối hoặc ẩn venue; tra cứu audit history theo action và resource. Admin không thể tự khóa tài khoản đang dùng.
 - PostgreSQL chống overlap bằng transaction lock và exclusion constraint; concurrency tests dùng database thật.
 - Booking transaction ghi đồng thời in-app notification và outbox event. Worker chuyển event sang BullMQ với job ID ổn định, retry email theo exponential backoff và xử lý expiration/completion idempotent.
 - Customer đọc/phân trang notification và chỉ có thể đánh dấu notification của chính mình đã đọc.
 
 Email local được gửi tới MailHog, không gửi ra Internet. `OUTBOX_POLL_INTERVAL_MS` điều chỉnh chu kỳ relay; `OUTBOX_REPLAY_AFTER_SECONDS` xác định khi nào event chưa có durable receipt được enqueue lại; `MAIL_FROM` đặt người gửi hiển thị. PostgreSQL vẫn là nguồn dữ liệu bền vững nếu Redis hoặc SMTP tạm thời lỗi. Compose bật Redis AOF/volume và chạy migration service trước API/worker.
 
-UI chính: `/`, `/venues/:id`, `/bookings`, `/bookings/:id`, `/notifications`, `/owner`, `/owner/calendar`, `/owner/bookings`, `/owner/bookings/:id`, `/owner/venues`, `/owner/schedule`, `/admin/owner-applications`, `/admin/venues`.
+UI chính: `/`, `/venues/:id`, `/bookings`, `/bookings/:id`, `/notifications`, `/owner`, `/owner/calendar`, `/owner/bookings`, `/owner/bookings/:id`, `/owner/venues`, `/owner/schedule`, `/admin`, `/admin/users`, `/admin/owner-applications`, `/admin/venues`, `/admin/audit-logs`.
 
 Web dùng OpenStreetMap qua một adapter Leaflet. Tile URL, attribution và zoom nằm tại `apps/web/src/config/map.js`, vì vậy có thể đổi nhà cung cấp bản đồ mà không sửa trang venue. Browser E2E dùng API giả lập tại ranh giới HTTP để kiểm tra ổn định hành trình UI; API E2E/integration riêng vẫn kiểm tra PostgreSQL và nghiệp vụ thật.

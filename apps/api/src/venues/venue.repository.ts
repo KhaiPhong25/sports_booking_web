@@ -74,9 +74,10 @@ export interface VenueRepository {
     take: number,
     filters?: { sportId?: string; areaId?: string },
   ): Promise<{ items: VenueRecord[]; total: number }>;
-  pendingVenues(
+  adminVenues(
     skip: number,
     take: number,
+    status?: VenueStatus,
   ): Promise<{ items: VenueRecord[]; total: number }>;
   ownerVenues(
     ownerId: string,
@@ -92,7 +93,8 @@ export interface VenueRepository {
     adminId: string,
     status: VenueStatus,
     reason: string | null,
-  ): Promise<VenueRecord>;
+    expectedStatus: VenueStatus,
+  ): Promise<VenueRecord | null>;
   setAmenities(id: string, amenityIds: string[]): Promise<VenueRecord>;
   addImage(
     id: string,

@@ -119,19 +119,6 @@ export function renderPublicVenueDetail(venue, criteria = {}) {
   return `<article class="page-card venue-detail"><a class="back-link" href="${escapeHtml(backHref)}">← Kết quả tìm kiếm</a><h1>${escapeHtml(venue.name)}</h1><p class="venue-address">${escapeHtml(venue.address)}</p><p>${escapeHtml(venue.description)}</p><div class="image-grid">${images}</div><h2>Tiện ích</h2><ul>${amenities || "<li>Chưa cập nhật</li>"}</ul><h2>Môn thể thao và đặt sân</h2><ul class="offering-list">${sports || "<li>Không có offering phù hợp.</li>"}</ul><h2>Vị trí</h2><div class="venue-map" data-map data-latitude="${escapeHtml(venue.latitude)}" data-longitude="${escapeHtml(venue.longitude)}" role="region" aria-label="Bản đồ vị trí ${escapeHtml(venue.name)}" tabindex="0"><p>Đang tải bản đồ…</p></div></article>`;
 }
 
-export function renderAdminVenues(venues = []) {
-  return `<section class="page-card"><h1>Duyệt địa điểm</h1>${
-    venues
-      .map(
-        (venue) =>
-          `<article class="review-card" data-venue-id="${escapeHtml(venue.id)}"><h2>${escapeHtml(
-            venue.name,
-          )}</h2><p>${escapeHtml(venue.address)}</p><label>Lý do từ chối hoặc ẩn<textarea name="reason"></textarea></label><div class="actions"><button data-action="approve">Duyệt</button><button class="secondary" data-action="reject">Từ chối</button><button class="secondary" data-action="hide">Ẩn</button></div></article>`,
-      )
-      .join("") || '<p class="empty-state">Không có địa điểm chờ duyệt.</p>'
-  }<p role="status" aria-live="polite"></p></section>`;
-}
-
 export async function mountPublicVenues(container) {
   const main = container.querySelector("main");
   const initialCriteria = criteriaFromSearchParams(
@@ -223,36 +210,4 @@ export async function mountPublicVenueDetail(container, id) {
   } catch (error) {
     main.innerHTML = `<section class="page-card"><p role="alert">${escapeHtml(error instanceof Error ? error.message : "Không tìm thấy địa điểm")}</p></section>`;
   }
-}
-
-export async function mountAdminVenues(container) {
-  const main = container.querySelector("main");
-  try {
-    const page = await apiRequest("/admin/venues");
-    main.innerHTML = renderAdminVenues(page.items);
-  } catch (error) {
-    main.innerHTML = `<section class="page-card"><p role="alert">${escapeHtml(error instanceof Error ? error.message : "Không tải được dữ liệu")}</p></section>`;
-    return;
-  }
-  main.addEventListener("click", async (event) => {
-    const button = event.target.closest("button[data-action]");
-    if (!button) return;
-    const card = button.closest("[data-venue-id]");
-    const reason = card.querySelector('[name="reason"]').value;
-    try {
-      await apiRequest(
-        `/admin/venues/${card.dataset.venueId}/${button.dataset.action}`,
-        {
-          method: "POST",
-          ...(button.dataset.action === "approve"
-            ? {}
-            : { body: JSON.stringify({ reason }) }),
-        },
-      );
-      card.remove();
-    } catch (error) {
-      main.querySelector('[role="status"]').textContent =
-        error instanceof Error ? error.message : "Không thể duyệt địa điểm";
-    }
-  });
 }

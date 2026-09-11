@@ -7,16 +7,12 @@ import {
   renderRegisterPage,
 } from "./pages/auth.js";
 import {
-  mountAdminOwnerApplications,
   mountOwnerApplication,
-  renderAdminOwnerApplications,
   renderOwnerApplication,
 } from "./pages/owner-application.js";
 import {
-  mountAdminVenues,
   mountPublicVenues,
   mountPublicVenueDetail,
-  renderAdminVenues,
   renderPublicVenues,
 } from "./pages/venues.js";
 import { authApi } from "./services/auth-api.js";
@@ -50,6 +46,22 @@ import {
   mountOwnerVenuesPage,
   renderOwnerVenuesPage,
 } from "./pages/owner-venues.js";
+import {
+  mountAdminDashboard,
+  renderAdminDashboard,
+} from "./pages/admin-dashboard.js";
+import { mountAdminUsers, renderAdminUsers } from "./pages/admin-users.js";
+import {
+  mountAdminOwnerApplications,
+  mountAdminVenues,
+  renderAdminOwnerApplications,
+  renderAdminVenues,
+} from "./pages/admin-moderation.js";
+import {
+  mountAdminAuditLogs,
+  renderAdminAuditLogs,
+} from "./pages/admin-audit.js";
+import { requiresSession } from "./services/route-access.js";
 
 const app = document.querySelector("#app");
 if (!app) {
@@ -60,26 +72,25 @@ const routes = {
   "/login": renderLoginPage,
   "/register": renderRegisterPage,
   "/owner/apply": renderOwnerApplication,
+  "/admin": renderAdminDashboard,
+  "/admin/users": renderAdminUsers,
   "/admin/owner-applications": renderAdminOwnerApplications,
   "/owner": renderOwnerDashboard,
   "/owner/calendar": renderOwnerCalendar,
   "/owner/venues": renderOwnerVenuesPage,
   "/admin/venues": renderAdminVenues,
+  "/admin/audit-logs": renderAdminAuditLogs,
   "/owner/schedule": renderOwnerSchedulePricing,
   "/bookings": renderCustomerBookings,
   "/notifications": renderNotifications,
   "/owner/bookings": renderOwnerBookings,
 };
-const protectedPaths = ["/owner/", "/admin/", "/bookings", "/notifications"];
-
 async function initialize() {
-  if (
-    window.location.pathname === "/owner" ||
-    protectedPaths.some((prefix) => window.location.pathname.startsWith(prefix))
-  ) {
-    try {
-      await authApi.ensureSession();
-    } catch {
+  const sessionRequired = requiresSession(window.location.pathname);
+  try {
+    await authApi.ensureSession();
+  } catch {
+    if (sessionRequired) {
       const returnTo = `${window.location.pathname}${window.location.search}`;
       window.location.assign(`/login?returnTo=${encodeURIComponent(returnTo)}`);
       return;
@@ -95,17 +106,22 @@ async function initialize() {
     /^\/owner\/bookings\/([^/]+)$/,
   );
   app.innerHTML = renderPage
-    ? renderShell(renderPage())
+    ? renderShell(renderPage(), authApi.user())
     : renderShell(
         venueDetailMatch || bookingDetailMatch || ownerBookingDetailMatch
           ? `<p role="status">Đang tải ${venueDetailMatch ? "địa điểm" : "booking"}…</p>`
           : undefined,
+        authApi.user(),
       );
   if (renderPage) mountAuthPage(app);
   if (window.location.pathname === "/owner/apply") mountOwnerApplication(app);
   if (window.location.pathname === "/admin/owner-applications") {
     mountAdminOwnerApplications(app);
   }
+  if (window.location.pathname === "/admin") mountAdminDashboard(app);
+  if (window.location.pathname === "/admin/users") mountAdminUsers(app);
+  if (window.location.pathname === "/admin/audit-logs")
+    mountAdminAuditLogs(app);
   if (window.location.pathname === "/") mountPublicVenues(app);
   if (window.location.pathname === "/owner") mountOwnerDashboard(app);
   if (window.location.pathname === "/owner/calendar") mountOwnerCalendar(app);

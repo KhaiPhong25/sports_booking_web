@@ -46,9 +46,13 @@ export class InMemoryOwnerApplicationRepository implements OwnerApplicationRepos
     return { items: all.slice(skip, skip + take), total: all.length };
   }
 
-  async listPending(skip: number, take: number) {
+  async listForAdmin(
+    skip: number,
+    take: number,
+    status?: OwnerApplicationStatus,
+  ) {
     const all = [...this.applications.values()].filter(
-      (item) => item.status === "PENDING",
+      (item) => !status || item.status === status,
     );
     return { items: all.slice(skip, skip + take), total: all.length };
   }

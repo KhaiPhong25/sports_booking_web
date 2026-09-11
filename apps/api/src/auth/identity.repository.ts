@@ -22,6 +22,11 @@ export interface IdentityRepository {
   createUser(input: CreateIdentityUser): Promise<IdentityUser>;
   findUserByEmail(email: string): Promise<IdentityUser | null>;
   findUserById(id: string): Promise<IdentityUser | null>;
+  listUsers(
+    skip: number,
+    take: number,
+    filters?: { query?: string; locked?: boolean; role?: RoleName },
+  ): Promise<{ items: IdentityUser[]; total: number }>;
   updateProfile(
     id: string,
     input: { displayName?: string; phone?: string },

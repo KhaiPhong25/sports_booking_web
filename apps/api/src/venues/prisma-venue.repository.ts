@@ -113,13 +113,13 @@ export class PrismaVenueRepository implements VenueRepository {
     return { items: venues.map(mapVenue), total };
   }
 
-  async pendingVenues(skip: number, take: number) {
-    const where = { status: PrismaVenueStatus.PENDING_APPROVAL };
+  async adminVenues(skip: number, take: number, status?: VenueStatus) {
+    const where = status ? { status: status as PrismaVenueStatus } : {};
     const [venues, total] = await this.prisma.$transaction([
       this.prisma.venue.findMany({
-        where: { status: PrismaVenueStatus.PENDING_APPROVAL },
+        where,
         include: venueInclude,
-        orderBy: { createdAt: "asc" },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
         skip,
         take,
       }),
@@ -161,17 +161,21 @@ export class PrismaVenueRepository implements VenueRepository {
     );
   }
 
-  moderateVenue(
+  async moderateVenue(
     id: string,
     adminId: string,
     status: VenueStatus,
     reason: string | null,
-  ): Promise<VenueRecord> {
+    expectedStatus: VenueStatus,
+  ): Promise<VenueRecord | null> {
     return this.prisma.$transaction(async (tx) => {
-      const before = await tx.venue.findUniqueOrThrow({ where: { id } });
-      const updated = await tx.venue.update({
-        where: { id },
+      const claimed = await tx.venue.updateMany({
+        where: { id, status: expectedStatus as PrismaVenueStatus },
         data: { status: status as PrismaVenueStatus, moderationReason: reason },
+      });
+      if (claimed.count !== 1) return null;
+      const updated = await tx.venue.findUniqueOrThrow({
+        where: { id },
         include: venueInclude,
       });
       await tx.auditLog.create({
@@ -181,8 +185,7 @@ export class PrismaVenueRepository implements VenueRepository {
           resourceType: "Venue",
           resourceId: id,
           beforeData: {
-            status: before.status,
-            reason: before.moderationReason,
+            status: expectedStatus,
           },
           afterData: { status, reason },
         },

@@ -14,4 +14,24 @@ describe("application shell", () => {
       "Tìm sân",
     );
   });
+
+  it("shows privileged navigation only for the matching authenticated role", () => {
+    document.body.innerHTML = renderShell(undefined, {
+      roles: ["CUSTOMER", "OWNER"],
+    });
+    expect(
+      document.querySelector('nav[aria-label="Điều hướng chủ sân"]'),
+    ).not.toBeNull();
+    expect(
+      document.querySelector('nav[aria-label="Điều hướng quản trị"]'),
+    ).toBeNull();
+
+    document.body.innerHTML = renderShell();
+    expect(
+      document.querySelector('nav[aria-label="Điều hướng chủ sân"]'),
+    ).toBeNull();
+    expect(
+      document.querySelector('nav[aria-label="Điều hướng quản trị"]'),
+    ).toBeNull();
+  });
 });

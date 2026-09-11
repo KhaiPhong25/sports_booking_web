@@ -31,7 +31,7 @@ export class PrismaOwnerApplicationRepository implements OwnerApplicationReposit
     const [items, total] = await this.prisma.$transaction([
       this.prisma.ownerApplication.findMany({
         where: { userId },
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         skip,
         take,
       }),
@@ -40,12 +40,16 @@ export class PrismaOwnerApplicationRepository implements OwnerApplicationReposit
     return { items, total };
   }
 
-  async listPending(skip: number, take: number) {
-    const where = { status: ReviewStatus.PENDING };
+  async listForAdmin(
+    skip: number,
+    take: number,
+    status?: OwnerApplicationStatus,
+  ) {
+    const where = status ? { status: status as ReviewStatus } : {};
     const [items, total] = await this.prisma.$transaction([
       this.prisma.ownerApplication.findMany({
         where,
-        orderBy: { createdAt: "asc" },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
         skip,
         take,
       }),

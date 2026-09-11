@@ -57,4 +57,21 @@ describe("OwnerApplicationsService", () => {
     expect(rejected.status).toBe("REJECTED");
     expect(repository.roles.get("customer-3") ?? []).not.toContain("OWNER");
   });
+
+  it("lets administrators filter the moderation history by status", async () => {
+    const repository = new InMemoryOwnerApplicationRepository();
+    const service = new OwnerApplicationsService(repository);
+    const approved = await service.submit("customer-4", {
+      businessName: "Sân Đã Duyệt",
+    });
+    await service.approve("admin-1", approved.id);
+    await service.submit("customer-5", { businessName: "Sân Đang Chờ" });
+
+    const result = await service.adminList("APPROVED", 1, 20);
+
+    expect(result.total).toBe(1);
+    expect(result.items).toEqual([
+      expect.objectContaining({ id: approved.id, status: "APPROVED" }),
+    ]);
+  });
 });

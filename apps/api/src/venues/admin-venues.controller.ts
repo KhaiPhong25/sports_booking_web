@@ -15,7 +15,7 @@ import { Roles } from "../common/auth/roles.decorator";
 import { RolesGuard } from "../common/auth/roles.guard";
 import { ModerationDto } from "./dto/venue.dto";
 import { VenuesService } from "./venues.service";
-import { PaginationDto } from "../common/pagination.dto";
+import { AdminVenuesQueryDto } from "./dto/admin-venues-query.dto";
 
 @ApiTags("admin-venues")
 @ApiBearerAuth()
@@ -26,8 +26,8 @@ export class AdminVenuesController {
   constructor(private readonly venues: VenuesService) {}
 
   @Get()
-  pending(@Query() query: PaginationDto) {
-    return this.venues.pendingList(query.page, query.pageSize);
+  list(@Query() query: AdminVenuesQueryDto) {
+    return this.venues.adminList(query.status, query.page, query.pageSize);
   }
 
   @Post(":id/approve")
