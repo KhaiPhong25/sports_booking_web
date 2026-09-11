@@ -4,7 +4,7 @@ Nền tảng tìm kiếm và đặt sân thể thao tại Thành phố Hồ Chí
 
 ## Trạng thái
 
-Dự án đã hoàn thành đến Phase 11: nền tảng, authentication/users, owner application, venue/court inventory, lịch/giá, booking an toàn đồng thời, queue/notifications, trải nghiệm web cho customer/owner/admin và đợt hardening về phân quyền, validation, security, accessibility cùng Docker clean-start.
+Dự án đã hoàn thành MVP qua Phase 12: nền tảng, authentication/users, owner application, venue/court inventory, lịch/giá, booking an toàn đồng thời, queue/notifications, trải nghiệm web cho customer/owner/admin, hardening và bộ tài liệu bàn giao.
 
 - `apps/api`: NestJS REST API, prefix `/api/v1`, Swagger `/docs`.
 - `apps/worker`: outbox relay và BullMQ workers riêng cho email, hết hạn và hoàn tất booking.
@@ -22,15 +22,15 @@ Host Node 26 chưa nằm trong dải runtime đã khóa. Dockerfiles dùng Node 
 ## Khởi động nhanh
 
 ```bash
-cp .env.example .env
-npm install
-npm run db:generate -w @sports-booking/api
-npm run verify
-docker compose up --build
+test -f .env || cp .env.example .env
+docker compose up -d --build
 docker compose exec api npm run db:seed -w @sports-booking/api
+curl http://localhost:3000/api/v1/ready
 ```
 
-Nếu PostgreSQL chạy trong Docker nhưng API chạy trên host, dùng `DATABASE_URL` trong `.env.example`. Không dùng placeholder hoặc tài khoản demo cho production.
+Sau khi seed, mở web tại `http://localhost:5173`. Hướng dẫn Docker-first, chạy từng process trên host, test database, reset/backup và troubleshooting nằm tại [hướng dẫn vận hành](docs/guides/local-development.md).
+
+Không dùng placeholder, secret mặc định hoặc tài khoản demo cho production.
 
 ## Tài khoản demo local
 
@@ -70,7 +70,7 @@ Ba lệnh `dev:*` chạy ở ba terminal riêng. Để khởi động toàn stac
 
 `test:integration` cần `TEST_DATABASE_URL` trỏ tới database test đã migrate. Xem kiến trúc tại `docs/architecture/design-spec.md` và ghi chú học tập theo thứ tự trong `docs/learning-notes/`.
 
-## Luồng đã có đến Phase 11
+## Luồng MVP
 
 - Public không cần đăng nhập: tìm theo môn/khu vực/ngày/giờ, xem sân còn trống, chi tiết venue, tiện ích, chế độ xác nhận, báo giá và bản đồ Leaflet. Khi bấm đặt sân, người chưa đăng nhập được đưa tới trang đăng nhập rồi quay lại đúng venue.
 - Customer đã đăng nhập: tạo booking với `Idempotency-Key`, xem danh sách có filter, mở chi tiết, hủy theo notice snapshot, xem/lọc/đánh dấu đã đọc notification.
@@ -86,4 +86,25 @@ UI chính: `/`, `/venues/:id`, `/bookings`, `/bookings/:id`, `/notifications`, `
 
 Web dùng OpenStreetMap qua một adapter Leaflet. Tile URL, attribution và zoom nằm tại `apps/web/src/config/map.js`, vì vậy có thể đổi nhà cung cấp bản đồ mà không sửa trang venue. Browser E2E dùng API giả lập tại ranh giới HTTP để kiểm tra ổn định hành trình UI; API E2E/integration riêng vẫn kiểm tra PostgreSQL và nghiệp vụ thật.
 
-Checklist hardening và vị trí test cho 25 acceptance criteria nằm tại `docs/quality/phase-11-hardening-checklist.md`. Để dọn artifact Docker có thể tái tạo mà vẫn giữ dữ liệu local, chạy `docker compose down`, xóa đúng các image có nhãn Compose project này rồi dùng `docker builder prune`; tuyệt đối không thêm `-v` nếu muốn giữ PostgreSQL, Redis và MinIO.
+Checklist hardening và vị trí test cho 25 acceptance criteria nằm tại `docs/quality/phase-11-hardening-checklist.md`. Tuyệt đối không thêm `-v` vào lệnh `docker compose down` nếu muốn giữ PostgreSQL, Redis và MinIO.
+
+## Tài liệu
+
+- [Mục lục tài liệu và thứ tự học](docs/README.md)
+- [Kiến trúc và booking correctness](docs/architecture/design-spec.md)
+- [ERD và database invariants](docs/architecture/erd.md)
+- [API contract](docs/architecture/api-contract.md), [Swagger local](http://localhost:3000/docs) và [ví dụ curl](docs/api/examples.md)
+- [Setup, migration, seed, test và troubleshooting](docs/guides/local-development.md)
+- [Kịch bản demo theo vai trò](docs/guides/demo-guide.md)
+- [Known limitations và roadmap](docs/product/known-limitations-and-roadmap.md)
+- [Báo cáo verification cuối](docs/quality/final-verification.md)
+
+## Dọn Docker an toàn
+
+```bash
+docker compose down --rmi local
+docker compose ps -a
+docker volume ls --filter label=com.docker.compose.project=sports_booking_web
+```
+
+Lệnh trên dừng container và xóa project images do Compose build nhưng giữ named volumes cùng base images. Không thêm `-v` trừ khi chủ động muốn xóa toàn bộ dữ liệu local. Build cache là tài nguyên dùng chung của Docker daemon; chỉ chạy `docker builder prune` sau khi đã kiểm tra nó không thuộc project khác.

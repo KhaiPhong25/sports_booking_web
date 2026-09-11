@@ -4,20 +4,20 @@ Mọi endpoint nằm dưới `/api/v1`; Swagger UI ở `/docs`, OpenAPI JSON ở
 
 ## Public và authentication
 
-| Method | Path                                  | Input chính                                       | Output chính                              |
-| ------ | ------------------------------------- | ------------------------------------------------- | ----------------------------------------- |
-| POST   | `/auth/register`                      | `{email,password,phone,displayName}`              | `201 {user}`                              |
-| POST   | `/auth/login`                         | `{email,password}`                                | `200 {accessToken,user}` + refresh cookie |
-| POST   | `/auth/refresh`                       | refresh cookie                                    | access token mới + cookie xoay vòng       |
-| POST   | `/auth/logout`                        | refresh cookie                                    | `204`                                     |
-| GET    | `/sports`                             | —                                                 | sport list                                |
-| GET    | `/areas`                              | —                                                 | area list                                 |
-| GET    | `/amenities`                          | —                                                 | amenity list                              |
-| GET    | `/catalog`                            | —                                                 | sports + areas + amenities                |
-| GET    | `/venues`                             | `sportId,areaId,startAt,endAt,page,pageSize,sort` | public venue results đủ capacity          |
-| GET    | `/venues/:venueId`                    | —                                                 | approved venue detail                     |
-| GET    | `/offerings/:offeringId/availability` | `startAt,endAt`                                   | `{available,capacity}`                    |
-| POST   | `/offerings/:offeringId/quotes`       | `{startAt,endAt}`                                 | `{amount,currency,breakdown}`             |
+| Method | Path                                  | Input chính                                  | Output chính                              |
+| ------ | ------------------------------------- | -------------------------------------------- | ----------------------------------------- |
+| POST   | `/auth/register`                      | `{email,password,phone,displayName}`         | `201 {accessToken,user}` + refresh cookie |
+| POST   | `/auth/login`                         | `{email,password}`                           | `200 {accessToken,user}` + refresh cookie |
+| POST   | `/auth/refresh`                       | refresh cookie                               | access token mới + cookie xoay vòng       |
+| POST   | `/auth/logout`                        | refresh cookie                               | `204`                                     |
+| GET    | `/sports`                             | —                                            | sport list                                |
+| GET    | `/areas`                              | —                                            | area list                                 |
+| GET    | `/amenities`                          | —                                            | amenity list                              |
+| GET    | `/catalog`                            | —                                            | sports + areas + amenities                |
+| GET    | `/venues`                             | `sportId,areaId,startAt,endAt,page,pageSize` | public venue results đủ capacity          |
+| GET    | `/venues/:venueId`                    | —                                            | approved venue detail                     |
+| GET    | `/offerings/:offeringId/availability` | `startAt,endAt`                              | `{available,capacity}`                    |
+| POST   | `/offerings/:offeringId/quotes`       | `{startAt,endAt}`                            | `{amount,currency,breakdown}`             |
 
 Public không được gọi `POST /bookings`.
 
