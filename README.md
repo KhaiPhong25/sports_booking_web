@@ -4,7 +4,7 @@ Nền tảng tìm kiếm và đặt sân thể thao tại Thành phố Hồ Chí
 
 ## Trạng thái
 
-Dự án đã hoàn thành đến Phase 10: nền tảng, authentication/users, owner application, venue/court inventory, lịch/giá, booking an toàn đồng thời, queue/notifications, trải nghiệm web cho customer/owner và khu vực quản trị đầy đủ cho admin.
+Dự án đã hoàn thành đến Phase 11: nền tảng, authentication/users, owner application, venue/court inventory, lịch/giá, booking an toàn đồng thời, queue/notifications, trải nghiệm web cho customer/owner/admin và đợt hardening về phân quyền, validation, security, accessibility cùng Docker clean-start.
 
 - `apps/api`: NestJS REST API, prefix `/api/v1`, Swagger `/docs`.
 - `apps/worker`: outbox relay và BullMQ workers riêng cho email, hết hạn và hoàn tất booking.
@@ -70,7 +70,7 @@ Ba lệnh `dev:*` chạy ở ba terminal riêng. Để khởi động toàn stac
 
 `test:integration` cần `TEST_DATABASE_URL` trỏ tới database test đã migrate. Xem kiến trúc tại `docs/architecture/design-spec.md` và ghi chú học tập theo thứ tự trong `docs/learning-notes/`.
 
-## Luồng đã có đến Phase 10
+## Luồng đã có đến Phase 11
 
 - Public không cần đăng nhập: tìm theo môn/khu vực/ngày/giờ, xem sân còn trống, chi tiết venue, tiện ích, chế độ xác nhận, báo giá và bản đồ Leaflet. Khi bấm đặt sân, người chưa đăng nhập được đưa tới trang đăng nhập rồi quay lại đúng venue.
 - Customer đã đăng nhập: tạo booking với `Idempotency-Key`, xem danh sách có filter, mở chi tiết, hủy theo notice snapshot, xem/lọc/đánh dấu đã đọc notification.
@@ -85,3 +85,5 @@ Email local được gửi tới MailHog, không gửi ra Internet. `OUTBOX_POLL
 UI chính: `/`, `/venues/:id`, `/bookings`, `/bookings/:id`, `/notifications`, `/owner`, `/owner/calendar`, `/owner/bookings`, `/owner/bookings/:id`, `/owner/venues`, `/owner/schedule`, `/admin`, `/admin/users`, `/admin/owner-applications`, `/admin/venues`, `/admin/audit-logs`.
 
 Web dùng OpenStreetMap qua một adapter Leaflet. Tile URL, attribution và zoom nằm tại `apps/web/src/config/map.js`, vì vậy có thể đổi nhà cung cấp bản đồ mà không sửa trang venue. Browser E2E dùng API giả lập tại ranh giới HTTP để kiểm tra ổn định hành trình UI; API E2E/integration riêng vẫn kiểm tra PostgreSQL và nghiệp vụ thật.
+
+Checklist hardening và vị trí test cho 25 acceptance criteria nằm tại `docs/quality/phase-11-hardening-checklist.md`. Để dọn artifact Docker có thể tái tạo mà vẫn giữ dữ liệu local, chạy `docker compose down`, xóa đúng các image có nhãn Compose project này rồi dùng `docker builder prune`; tuyệt đối không thêm `-v` nếu muốn giữ PostgreSQL, Redis và MinIO.

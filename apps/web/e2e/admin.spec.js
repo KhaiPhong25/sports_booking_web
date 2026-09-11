@@ -204,6 +204,13 @@ test("admin navigation và filters dùng được trên mobile", async ({ page }
     page.getByRole("link", { name: "Bỏ qua điều hướng" }),
   ).toBeFocused();
   await expect(page.locator("body")).not.toHaveCSS("overflow-x", "scroll");
+  expect(
+    await page.evaluate(
+      () =>
+        globalThis.document.documentElement.scrollWidth <=
+        globalThis.innerWidth,
+    ),
+  ).toBe(true);
   await expect(
     page.getByRole("navigation", { name: "Điều hướng quản trị" }),
   ).toBeVisible();

@@ -69,8 +69,17 @@ describe("authentication API", () => {
       displayName: "E2E User",
     });
     expect(registration.status).toBe(201);
-    expect(registration.headers["set-cookie"]?.[0]).toContain("HttpOnly");
+    const refreshCookie = registration.headers["set-cookie"]?.[0] ?? "";
+    expect(refreshCookie).toContain("HttpOnly");
+    expect(refreshCookie).toContain("SameSite=Strict");
+    expect(refreshCookie).toContain("Path=/api/v1/auth");
+    expect(refreshCookie).not.toContain("; Secure");
     expect(registration.body.refreshToken).toBeUndefined();
+
+    await agent
+      .post("/api/v1/auth/login")
+      .send({ email: "e2e@example.com", password: "StrongPass123!" })
+      .expect(200);
 
     const refreshed = await agent
       .post("/api/v1/auth/refresh")
@@ -95,40 +104,65 @@ describe("authentication API", () => {
   });
 
   it("rejects duplicate emails and invalid foreign origins", async () => {
+    const agent = request.agent(app.getHttpServer());
+    await agent.post("/api/v1/auth/register").send({
+      email: "origin@example.com",
+      password: "StrongPass123!",
+      phone: "0901234569",
+      displayName: "Origin User",
+    });
+    const foreignOrigin = await agent
+      .post("/api/v1/auth/refresh")
+      .set("Origin", "https://attacker.example");
+    expect(foreignOrigin.status).toBe(401);
+    expect(foreignOrigin.body.message).toBe("Untrusted request origin");
+
     const duplicate = await request(app.getHttpServer())
       .post("/api/v1/auth/register")
       .send({
-        email: "E2E@example.com",
+        email: "ORIGIN@example.com",
         password: "StrongPass123!",
-        phone: "0901234567",
+        phone: "0901234570",
         displayName: "Duplicate",
       });
     expect(duplicate.status).toBe(409);
-    expect(
-      (
-        await request(app.getHttpServer())
-          .post("/api/v1/auth/refresh")
-          .set("Origin", "https://attacker.example")
-      ).status,
-    ).toBe(401);
+  });
+
+  it("rejects unknown registration fields instead of silently trusting them", async () => {
+    await request(app.getHttpServer())
+      .post("/api/v1/auth/register")
+      .send({
+        email: "forged-role@example.com",
+        password: "StrongPass123!",
+        phone: "0901234568",
+        displayName: "Forged Role",
+        roles: ["ADMIN"],
+      })
+      .expect(400);
   });
 
   it("invalidates an already-issued access token when the account is locked", async () => {
-    const login = await request(app.getHttpServer())
-      .post("/api/v1/auth/login")
+    const registration = await request(app.getHttpServer())
+      .post("/api/v1/auth/register")
       .send({
-        email: "e2e@example.com",
+        email: "locked@example.com",
         password: "StrongPass123!",
-      });
+        phone: "0901234571",
+        displayName: "Locked User",
+      })
+      .expect(201);
     const user = [...repository.users.values()].find(
-      (item) => item.email === "e2e@example.com",
+      (item) => item.email === "locked@example.com",
     );
     if (!user) throw new Error("test user missing");
     await repository.setLocked(user.id, true);
 
     const response = await request(app.getHttpServer())
       .get("/api/v1/me")
-      .set("Authorization", `Bearer ${login.body.accessToken as string}`);
+      .set(
+        "Authorization",
+        `Bearer ${registration.body.accessToken as string}`,
+      );
     expect(response.status).toBe(401);
   });
 });

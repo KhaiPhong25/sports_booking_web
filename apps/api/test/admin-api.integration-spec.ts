@@ -170,6 +170,14 @@ describeDatabase("Phase 10 admin API with PostgreSQL", () => {
       .get("/api/v1/admin/venues?status=UNLISTED")
       .set("Authorization", `Bearer ${adminToken}`)
       .expect(400);
+    await request(app.getHttpServer())
+      .get("/api/v1/admin/audit-logs?actorId=not-a-uuid")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .expect(400);
+    await request(app.getHttpServer())
+      .get("/api/v1/admin/users?unexpected=true")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .expect(400);
   });
 
   it("lists safe user summaries and prevents self-lock", async () => {

@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl \
 COPY --chown=node:node --from=dependencies /workspace/node_modules ./node_modules
 COPY --chown=node:node --from=dependencies /workspace/apps/api/node_modules ./apps/api/node_modules
 COPY package.json ./package.json
+COPY tsconfig.base.json ./tsconfig.base.json
 COPY apps/api/package.json ./apps/api/package.json
 COPY --from=build /workspace/apps/api/dist ./apps/api/dist
 COPY --from=build /workspace/apps/api/prisma ./apps/api/prisma

@@ -223,6 +223,13 @@ test("owner calendar và biểu mẫu quản lý dùng được trên mobile", a
     page.getByRole("link", { name: "Bỏ qua điều hướng" }),
   ).toBeFocused();
   await expect(page.locator("body")).not.toHaveCSS("overflow-x", "scroll");
+  expect(
+    await page.evaluate(
+      () =>
+        globalThis.document.documentElement.scrollWidth <=
+        globalThis.innerWidth,
+    ),
+  ).toBe(true);
   await expect(page.getByRole("list", { name: /Booking từ/ })).toBeVisible();
   await expect(page.getByLabel("Địa điểm")).toBeVisible();
 });

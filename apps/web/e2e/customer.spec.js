@@ -199,6 +199,13 @@ test("giao diện mobile có skip link và điều khiển truy cập bằng bà
     page.getByRole("link", { name: "Bỏ qua điều hướng" }),
   ).toBeFocused();
   await expect(page.locator("body")).not.toHaveCSS("overflow-x", "scroll");
+  expect(
+    await page.evaluate(
+      () =>
+        globalThis.document.documentElement.scrollWidth <=
+        globalThis.innerWidth,
+    ),
+  ).toBe(true);
   await expect(
     page.getByRole("navigation", { name: "Điều hướng chính" }),
   ).toBeVisible();

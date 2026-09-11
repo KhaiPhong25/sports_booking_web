@@ -120,6 +120,27 @@ describeDatabase("concurrency-safe bookings with PostgreSQL", () => {
     });
   });
 
+  beforeEach(async () => {
+    await prisma.booking.deleteMany({ where: { offeringId: ids.offering } });
+    await prisma.idempotencyRecord.deleteMany({
+      where: {
+        actorId: { in: [ids.customerOne, ids.customerTwo, ids.customerThree] },
+      },
+    });
+    await prisma.court.updateMany({
+      where: { offeringId: ids.offering },
+      data: { isActive: true },
+    });
+    await prisma.venueSportOffering.update({
+      where: { id: ids.offering },
+      data: { confirmationMode: ConfirmationMode.INSTANT },
+    });
+    await prisma.pricingRule.updateMany({
+      where: { offeringId: ids.offering },
+      data: { pricePerSlot: 50_000 },
+    });
+  });
+
   afterAll(async () => {
     await prisma.booking.deleteMany({ where: { offeringId: ids.offering } });
     await prisma.idempotencyRecord.deleteMany({
@@ -147,33 +168,27 @@ describeDatabase("concurrency-safe bookings with PostgreSQL", () => {
     await prisma.$disconnect();
   });
 
-  it("allocates exactly the two physical courts under three simultaneous requests", async () => {
-    const results = await Promise.allSettled([
-      service.create(
-        ids.customerOne,
-        `race-${suffix}-1`,
-        { offeringId: ids.offering, startAt, endAt },
-        now,
+  it("allocates exactly the two physical courts under twenty simultaneous requests", async () => {
+    const customerIds = [ids.customerOne, ids.customerTwo, ids.customerThree];
+    const results = await Promise.allSettled(
+      Array.from({ length: 20 }, (_, index) =>
+        service.create(
+          customerIds[index % customerIds.length]!,
+          `race-${suffix}-${index}`,
+          { offeringId: ids.offering, startAt, endAt },
+          now,
+        ),
       ),
-      service.create(
-        ids.customerTwo,
-        `race-${suffix}-2`,
-        { offeringId: ids.offering, startAt, endAt },
-        now,
-      ),
-      service.create(
-        ids.customerThree,
-        `race-${suffix}-3`,
-        { offeringId: ids.offering, startAt, endAt },
-        now,
-      ),
-    ]);
-    expect(
-      results.filter((result) => result.status === "fulfilled"),
-    ).toHaveLength(2);
-    expect(
-      results.filter((result) => result.status === "rejected"),
-    ).toHaveLength(1);
+    );
+    const fulfilled = results.filter((result) => result.status === "fulfilled");
+    const rejected = results.filter((result) => result.status === "rejected");
+    expect(fulfilled).toHaveLength(2);
+    expect(rejected).toHaveLength(18);
+    for (const result of rejected) {
+      expect(result.reason).toMatchObject({
+        response: { code: "BOOKING_NO_CAPACITY" },
+      });
+    }
     const persisted = await prisma.booking.findMany({
       where: { offeringId: ids.offering, startAt, endAt },
       select: { courtId: true },
@@ -185,6 +200,7 @@ describeDatabase("concurrency-safe bookings with PostgreSQL", () => {
   });
 
   it("rejects reassignment onto an overlapping booking", async () => {
+    await createConfirmedBookings("reassign", 2);
     const bookings = await prisma.booking.findMany({
       where: { offeringId: ids.offering, startAt, endAt },
       orderBy: { courtId: "asc" },
@@ -196,9 +212,8 @@ describeDatabase("concurrency-safe bookings with PostgreSQL", () => {
   });
 
   it("does not let an owner cancel a booking after it has started", async () => {
-    const booking = await prisma.booking.findFirstOrThrow({
-      where: { offeringId: ids.offering, startAt, endAt },
-    });
+    const booking = (await createConfirmedBookings("started", 1))[0];
+    if (!booking) throw new Error("Started-booking fixture missing");
 
     await expect(
       service.cancelOwner(
@@ -218,6 +233,7 @@ describeDatabase("concurrency-safe bookings with PostgreSQL", () => {
   });
 
   it("uses a database exclusion constraint as the final overlap defense", async () => {
+    await createConfirmedBookings("constraint", 1);
     const existing = await prisma.booking.findFirstOrThrow({
       where: { offeringId: ids.offering, startAt, endAt },
     });
@@ -279,8 +295,9 @@ describeDatabase("concurrency-safe bookings with PostgreSQL", () => {
   });
 
   it("keeps the booking price snapshot after the pricing rule changes", async () => {
+    await createConfirmedBookings("snapshot", 1);
     const booking = await prisma.booking.findFirstOrThrow({
-      where: { offeringId: ids.offering },
+      where: { offeringId: ids.offering, startAt, endAt },
     });
     expect(booking.priceAmount).toBe(100_000n);
     await prisma.pricingRule.updateMany({
@@ -294,12 +311,6 @@ describeDatabase("concurrency-safe bookings with PostgreSQL", () => {
   });
 
   it("expires stale holds safely under reassignment and concurrent availability", async () => {
-    await prisma.booking.deleteMany({ where: { offeringId: ids.offering } });
-    await prisma.idempotencyRecord.deleteMany({
-      where: {
-        actorId: { in: [ids.customerOne, ids.customerTwo, ids.customerThree] },
-      },
-    });
     await prisma.venueSportOffering.update({
       where: { id: ids.offering },
       data: { confirmationMode: ConfirmationMode.OWNER_APPROVAL },
@@ -364,16 +375,6 @@ describeDatabase("concurrency-safe bookings with PostgreSQL", () => {
   });
 
   it("serializes booking creation against court deactivation", async () => {
-    await prisma.booking.deleteMany({ where: { offeringId: ids.offering } });
-    await prisma.idempotencyRecord.deleteMany({
-      where: {
-        actorId: { in: [ids.customerOne, ids.customerTwo, ids.customerThree] },
-      },
-    });
-    await prisma.venueSportOffering.update({
-      where: { id: ids.offering },
-      data: { confirmationMode: ConfirmationMode.INSTANT },
-    });
     const courts = await prisma.court.findMany({
       where: { offeringId: ids.offering },
       orderBy: { id: "asc" },
@@ -411,4 +412,18 @@ describeDatabase("concurrency-safe bookings with PostgreSQL", () => {
     });
     expect(booking ? court.isActive : !court.isActive).toBe(true);
   });
+
+  async function createConfirmedBookings(prefix: string, count: number) {
+    const customerIds = [ids.customerOne, ids.customerTwo, ids.customerThree];
+    return Promise.all(
+      Array.from({ length: count }, (_, index) =>
+        service.create(
+          customerIds[index % customerIds.length]!,
+          `${prefix}-${suffix}-${index}`,
+          { offeringId: ids.offering, startAt, endAt },
+          now,
+        ),
+      ),
+    );
+  }
 });
