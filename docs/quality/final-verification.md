@@ -1,10 +1,12 @@
 # Báo cáo verification cuối MVP
 
-**Ngày kiểm tra:** 2026-09-11
+**Ngày kiểm tra ban đầu:** 2026-09-11
+
+**Acceptance re-run:** 2026-09-12
 
 **Nhánh:** `main`
 
-**Checkpoint implementation gần nhất:** `f233f46 test(phase-11): harden security and critical flows`
+**Baseline trước acceptance re-run:** `854ada2 docs(phase-12): complete final handoff`
 
 ## 1. Sản phẩm hoàn thành
 
@@ -151,3 +153,7 @@ Không có lỗi Critical/Important đã biết về authorization hoặc double
 ## 8. Learning notes
 
 Thứ tự đọc từ Phase 00 đến Phase 12 được duy trì tại [mục lục tài liệu](../README.md#thứ-tự-learning-notes). Mỗi note giải thích phần đã xây, lựa chọn thiết kế, request/data flow, file quan trọng, cách chạy/test, lỗi thường gặp, bảo mật và câu hỏi tự kiểm tra.
+
+## 9. Section XIV acceptance re-run
+
+Ngày 2026-09-12 đã audit lại 25/25 acceptance criteria và chạy mới quality gate, API PostgreSQL/MinIO integration, API E2E, worker PostgreSQL/MailHog và Playwright. Lượt chạy phát hiện rồi sửa drift MinIO credentials trong test harness và race chờ render ở admin browser test. Kết quả, command và giới hạn Docker registry được ghi tại [báo cáo Testing Acceptance Criteria](testing-acceptance-report.md).

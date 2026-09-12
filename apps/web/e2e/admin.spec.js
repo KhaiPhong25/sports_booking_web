@@ -163,7 +163,11 @@ test("admin quản lý user, hồ sơ owner, venue và xem audit", async ({
   await page.goto("/admin/venues");
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Duyệt địa điểm" }).click();
-  await expect(page.locator("main")).not.toHaveAttribute("aria-busy", "true");
+  await expect(
+    page
+      .locator('[data-venue-id="venue-1"]')
+      .getByText("Đã duyệt", { exact: true }),
+  ).toBeVisible();
   const venueCard = page.locator('[data-venue-id="venue-1"]');
   const hideReason = venueCard.getByLabel("Lý do từ chối hoặc ẩn");
   await hideReason.fill("Thông tin địa điểm cần tạm ẩn để xác minh");
