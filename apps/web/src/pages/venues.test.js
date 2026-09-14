@@ -14,6 +14,38 @@ describe("venue pages", () => {
     );
   });
 
+  it("presents public discovery as a sports-first hero with a usable search dock", () => {
+    document.body.innerHTML = renderPublicVenues(
+      [
+        {
+          id: "venue-1",
+          name: "Arena Thảo Điền",
+          address: "12 Đường số 8, Thủ Đức",
+          description: "Cụm sân tiêu chuẩn với khu thay đồ và bãi xe.",
+          offerings: [{ sportName: "Bóng đá" }],
+        },
+      ],
+      {
+        sports: [{ id: "sport-1", name: "Bóng đá" }],
+        areas: [{ id: "area-1", name: "Thủ Đức" }],
+      },
+    );
+
+    expect(document.querySelector(".discovery-hero")).not.toBeNull();
+    expect(
+      document.querySelector(".discovery-hero__media")?.getAttribute("src"),
+    ).toBe("/assets/sports-hero.png");
+    expect(
+      document.querySelector(".search-dock [data-venue-search]"),
+    ).not.toBeNull();
+    expect(document.querySelector(".value-strip")?.textContent).toContain(
+      "Xem lịch trống",
+    );
+    expect(
+      document.querySelector(".venue-card__content")?.textContent,
+    ).toContain("Arena Thảo Điền");
+  });
+
   it("renders anonymous search fields for sport, area, date and interval", () => {
     document.body.innerHTML = renderVenueSearchForm({
       sports: [{ id: "sport-1", name: "Cầu lông" }],
@@ -62,5 +94,6 @@ describe("venue pages", () => {
     expect(
       document.querySelector(".back-link")?.getAttribute("href"),
     ).toContain("sportId=sport-1");
+    expect(document.querySelector(".venue-detail__booking")).not.toBeNull();
   });
 });

@@ -1,4 +1,5 @@
 import { escapeHtml } from "../components/html.js";
+import { icon } from "../components/icons.js";
 import { apiRequest } from "../services/api.js";
 import { mountVenueMap } from "../services/map-provider.js";
 import {
@@ -73,23 +74,56 @@ export function renderPublicVenues(
   const querySuffix = detailQuery.size ? `?${detailQuery.toString()}` : "";
   const cards = venues.length
     ? venues
-        .map(
-          (venue) => `<article class="venue-card">
-            <h2><a href="/venues/${escapeHtml(venue.id)}${escapeHtml(querySuffix)}">${escapeHtml(venue.name)}</a></h2>
-            <p>${escapeHtml(venue.address)}</p>
-            <p>${escapeHtml(venue.description)}</p>
-            <p><strong>Môn thể thao:</strong> ${escapeHtml(
-              (venue.offerings ?? [])
-                .map((offering) => offering.sportName)
-                .filter(Boolean)
-                .join(", ") || "Đang cập nhật",
-            )}</p>
-            ${criteria.startAt ? '<p class="availability-badge">Còn sân trong khung giờ đã chọn</p>' : ""}
-          </article>`,
-        )
+        .map((venue, index) => {
+          const image = venue.images?.[0];
+          const sports =
+            (venue.offerings ?? [])
+              .map((offering) => offering.sportName)
+              .filter(Boolean)
+              .join(", ") || "Đang cập nhật";
+          const media = image?.url
+            ? `<img src="${escapeHtml(image.url)}" alt="${escapeHtml(image.altText ?? venue.name)}" loading="lazy" />`
+            : `<div class="venue-card__fallback venue-card__fallback--${(index % 3) + 1}" aria-hidden="true"><span>${icon("venue")}</span></div>`;
+          return `<article class="venue-card">
+            <div class="venue-card__media">${media}${criteria.startAt ? '<span class="availability-badge">Còn sân trong khung giờ đã chọn</span>' : ""}</div>
+            <div class="venue-card__content">
+              <p class="venue-card__sport">${escapeHtml(sports)}</p>
+              <h2><a href="/venues/${escapeHtml(venue.id)}${escapeHtml(querySuffix)}">${escapeHtml(venue.name)}</a></h2>
+              <p class="venue-card__address">${icon("venue", "inline-icon")}${escapeHtml(venue.address)}</p>
+              <p>${escapeHtml(venue.description)}</p>
+              <a class="venue-card__link" href="/venues/${escapeHtml(venue.id)}${escapeHtml(querySuffix)}">Xem sân và lịch trống ${icon("arrow", "inline-icon")}</a>
+            </div>
+          </article>`;
+        })
         .join("")
-    : '<p class="empty-state">Hiện chưa có sân đã được duyệt.</p>';
-  return `<section class="catalog" aria-labelledby="venues-title"><div class="page-heading"><div><p class="eyebrow">Thành phố Hồ Chí Minh</p><h1 id="venues-title">Tìm sân thể thao</h1></div></div>${renderVenueSearchForm(catalog, criteria)}<div class="venue-grid">${cards}</div><p class="form-status" role="status" aria-live="polite"></p></section>`;
+    : '<div class="empty-state"><strong>Hiện chưa có sân phù hợp.</strong><p>Thử đổi khu vực hoặc khung giờ để khám phá thêm lựa chọn đã được duyệt.</p></div>';
+  const sportChips = (catalog.sports ?? [])
+    .slice(0, 4)
+    .map((sport) => `<span class="sport-chip">${escapeHtml(sport.name)}</span>`)
+    .join("");
+  return `<div class="public-discovery">
+    <section class="discovery-hero" aria-labelledby="venues-title">
+      <img class="discovery-hero__media" src="/assets/sports-hero.png" alt="Các sân thể thao đô thị dưới ánh đèn buổi tối" />
+      <div class="discovery-hero__overlay"></div>
+      <div class="discovery-hero__content">
+        <p class="eyebrow">Chơi đúng nhịp · TP. Hồ Chí Minh</p>
+        <h1 id="venues-title">Sân phù hợp.<br />Giờ chơi của bạn.</h1>
+        <p>Khám phá địa điểm đã duyệt, kiểm tra lịch trống và đặt sân trong một luồng rõ ràng.</p>
+        ${sportChips ? `<div class="sport-chips" aria-label="Môn thể thao phổ biến">${sportChips}</div>` : ""}
+      </div>
+      <div class="search-dock">${renderVenueSearchForm(catalog, criteria)}</div>
+    </section>
+    <section class="value-strip" aria-label="Lợi ích của nền tảng">
+      <div><strong>01</strong><span><b>Xem lịch trống</b> theo đúng ngày và khung giờ</span></div>
+      <div><strong>02</strong><span><b>Địa điểm rõ ràng</b> với tiện ích và bản đồ</span></div>
+      <div><strong>03</strong><span><b>Quản lý tập trung</b> booking và thông báo của bạn</span></div>
+    </section>
+    <section class="catalog venue-results" aria-labelledby="venue-results-title">
+      <div class="page-heading"><div><p class="eyebrow">Địa điểm nổi bật</p><h2 id="venue-results-title">Sẵn sàng cho trận tiếp theo</h2></div><p>${venues.length ? `${venues.length} địa điểm phù hợp` : "Mở rộng tiêu chí tìm kiếm"}</p></div>
+      <div class="venue-grid">${cards}</div>
+      <p class="form-status" role="status" aria-live="polite"></p>
+    </section>
+  </div>`;
 }
 
 export function renderPublicVenueDetail(venue, criteria = {}) {
@@ -116,7 +150,19 @@ export function renderPublicVenueDetail(venue, criteria = {}) {
         `<li class="offering-card"><h3>${escapeHtml(item.sportName ?? "Môn thể thao")}</h3><p>${item.confirmationMode === "INSTANT" ? "Xác nhận ngay" : "Chờ chủ sân duyệt"}</p>${renderBookingWidget(item.id, criteria)}</li>`,
     )
     .join("");
-  return `<article class="page-card venue-detail"><a class="back-link" href="${escapeHtml(backHref)}">← Kết quả tìm kiếm</a><h1>${escapeHtml(venue.name)}</h1><p class="venue-address">${escapeHtml(venue.address)}</p><p>${escapeHtml(venue.description)}</p><div class="image-grid">${images}</div><h2>Tiện ích</h2><ul>${amenities || "<li>Chưa cập nhật</li>"}</ul><h2>Môn thể thao và đặt sân</h2><ul class="offering-list">${sports || "<li>Không có offering phù hợp.</li>"}</ul><h2>Vị trí</h2><div class="venue-map" data-map data-latitude="${escapeHtml(venue.latitude)}" data-longitude="${escapeHtml(venue.longitude)}" role="region" aria-label="Bản đồ vị trí ${escapeHtml(venue.name)}" tabindex="0"><p>Đang tải bản đồ…</p></div></article>`;
+  return `<article class="catalog venue-detail">
+    <a class="back-link" href="${escapeHtml(backHref)}">← Kết quả tìm kiếm</a>
+    <header class="venue-detail__header"><div><p class="eyebrow">Địa điểm thể thao</p><h1>${escapeHtml(venue.name)}</h1><p class="venue-address">${icon("venue", "inline-icon")}${escapeHtml(venue.address)}</p></div><span class="status-pill">Đã được duyệt</span></header>
+    <div class="venue-detail__layout">
+      <div class="venue-detail__content">
+        ${images ? `<div class="image-grid">${images}</div>` : '<div class="venue-gallery-fallback" aria-hidden="true"><span></span><span></span><span></span></div>'}
+        <section class="content-section"><p class="section-kicker">Về địa điểm</p><h2>Không gian cho cuộc chơi trọn vẹn</h2><p>${escapeHtml(venue.description)}</p></section>
+        <section class="content-section"><p class="section-kicker">Tiện ích</p><h2>Mọi thứ bạn cần tại sân</h2><ul class="amenity-list">${amenities || "<li>Thông tin tiện ích đang được cập nhật</li>"}</ul></section>
+        <section class="content-section"><p class="section-kicker">Vị trí</p><h2>Đường đến sân</h2><div class="venue-map" data-map data-latitude="${escapeHtml(venue.latitude)}" data-longitude="${escapeHtml(venue.longitude)}" role="region" aria-label="Bản đồ vị trí ${escapeHtml(venue.name)}" tabindex="0"><p>Đang tải bản đồ…</p></div></section>
+      </div>
+      <aside class="venue-detail__booking" aria-labelledby="booking-options-title"><p class="eyebrow">Lịch trống</p><h2 id="booking-options-title">Chọn môn và khung giờ</h2><p class="booking-guidance">Bạn có thể xem lịch khi chưa đăng nhập. Đăng nhập chỉ cần thiết ở bước xác nhận đặt sân.</p><ul class="offering-list">${sports || '<li class="empty-state">Không có offering phù hợp.</li>'}</ul></aside>
+    </div>
+  </article>`;
 }
 
 export async function mountPublicVenues(container) {
