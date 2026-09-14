@@ -22,5 +22,6 @@ describe("admin dashboard", () => {
     ]) {
       expect(document.querySelector(`a[href="${href}"]`)).not.toBeNull();
     }
+    expect(document.querySelector(".workspace-hero--admin")).not.toBeNull();
   });
 });

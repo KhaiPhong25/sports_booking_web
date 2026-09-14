@@ -19,16 +19,16 @@ export function renderAdminUsers(
         .map(
           (
             user,
-          ) => `<article class="admin-list-card" data-user-id="${escapeHtml(user.id)}">
-            <div><strong>${escapeHtml(user.displayName)}</strong><span>${escapeHtml(user.email)}</span><span>${escapeHtml(user.phone)}</span></div>
-            <div><span>${escapeHtml(user.roles.join(", "))}</span>${renderStatus(user.isLocked ? "LOCKED" : "ACTIVE")}</div>
+          ) => `<article class="admin-list-card data-row" data-user-id="${escapeHtml(user.id)}">
+            <div class="data-row__identity"><span class="data-row__avatar" aria-hidden="true">${escapeHtml(user.displayName.slice(0, 1).toUpperCase())}</span><div><strong>${escapeHtml(user.displayName)}</strong><span>${escapeHtml(user.email)}</span><span>${escapeHtml(user.phone)}</span></div></div>
+            <div class="data-row__meta"><span>${escapeHtml(user.roles.join(", "))}</span>${renderStatus(user.isLocked ? "LOCKED" : "ACTIVE")}</div>
             <button type="button" class="${user.isLocked ? "" : "danger"}" data-action="${user.isLocked ? "unlock" : "lock"}">${user.isLocked ? "Mở khóa" : "Khóa tài khoản"}</button>
           </article>`,
         )
         .join("")
     : '<p class="empty-state">Không tìm thấy tài khoản phù hợp.</p>';
   return `<section class="catalog" aria-labelledby="admin-users-title">
-    <div class="page-heading"><div><p class="eyebrow">Quản trị người dùng</p><h1 id="admin-users-title">Tài khoản</h1></div></div>
+    <header class="workspace-header workspace-header--admin"><div><p class="eyebrow">Identity control</p><h1 id="admin-users-title">Tài khoản</h1><p>Tìm kiếm danh tính, kiểm tra vai trò và kiểm soát quyền truy cập hệ thống.</p></div></header>
     <form class="filter-form" data-admin-filter>
       <label for="user-query">Tìm kiếm<input id="user-query" name="query" value="${escapeHtml(filters.query ?? "")}" placeholder="Tên, email hoặc số điện thoại" /></label>
       <label for="user-role">Vai trò<select id="user-role" name="role"><option value="">Tất cả</option><option value="CUSTOMER"${selected(filters.role, "CUSTOMER")}>Customer</option><option value="OWNER"${selected(filters.role, "OWNER")}>Owner</option><option value="ADMIN"${selected(filters.role, "ADMIN")}>Admin</option></select></label>

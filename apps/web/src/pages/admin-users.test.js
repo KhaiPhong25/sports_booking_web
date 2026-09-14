@@ -30,5 +30,6 @@ describe("admin user controls", () => {
     expect(
       document.querySelector('[data-action="lock"]')?.textContent,
     ).toContain("Khóa");
+    expect(document.querySelector(".data-row")).not.toBeNull();
   });
 });

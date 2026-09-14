@@ -24,11 +24,11 @@ export function renderAdminOwnerApplications(
               : item.reviewReason
                 ? `<p><strong>Lý do:</strong> ${escapeHtml(item.reviewReason)}</p>`
                 : "";
-          return `<article class="review-card" data-application-id="${escapeHtml(item.id)}"><div class="booking-card__heading"><h2>${escapeHtml(item.businessName)}</h2>${renderStatus(item.status)}</div><p>${escapeHtml(item.experience || "Chưa cung cấp kinh nghiệm")}</p>${decisions}</article>`;
+          return `<article class="review-card moderation-card" data-application-id="${escapeHtml(item.id)}"><div class="booking-card__heading"><div><p class="booking-card__label">Hồ sơ đối tác</p><h2>${escapeHtml(item.businessName)}</h2></div>${renderStatus(item.status)}</div><p>${escapeHtml(item.experience || "Chưa cung cấp kinh nghiệm")}</p>${decisions}</article>`;
         })
         .join("")
     : '<p class="empty-state">Không có hồ sơ phù hợp.</p>';
-  return `<section class="catalog" aria-labelledby="review-title"><div class="page-heading"><div><p class="eyebrow">Kiểm duyệt</p><h1 id="review-title">Hồ sơ chủ sân</h1></div></div><form class="filter-form" data-admin-filter><label for="application-status">Trạng thái<select id="application-status" name="status"><option value="">Tất cả</option><option value="PENDING"${selected(filters.status, "PENDING")}>Đang chờ</option><option value="APPROVED"${selected(filters.status, "APPROVED")}>Đã duyệt</option><option value="REJECTED"${selected(filters.status, "REJECTED")}>Đã từ chối</option></select></label><button type="submit">Lọc hồ sơ</button></form><div data-admin-list>${rows}</div>${renderAdminPagination(page)}<p class="form-status" role="status" aria-live="polite"></p></section>`;
+  return `<section class="catalog" aria-labelledby="review-title"><header class="workspace-header workspace-header--admin"><div><p class="eyebrow">Partner review</p><h1 id="review-title">Hồ sơ chủ sân</h1><p>Đánh giá năng lực vận hành trước khi cấp quyền quản lý địa điểm.</p></div></header><form class="filter-form" data-admin-filter><label for="application-status">Trạng thái<select id="application-status" name="status"><option value="">Tất cả</option><option value="PENDING"${selected(filters.status, "PENDING")}>Đang chờ</option><option value="APPROVED"${selected(filters.status, "APPROVED")}>Đã duyệt</option><option value="REJECTED"${selected(filters.status, "REJECTED")}>Đã từ chối</option></select></label><button type="submit">Lọc hồ sơ</button></form><div class="moderation-queue" data-admin-list>${rows}</div>${renderAdminPagination(page)}<p class="form-status" role="status" aria-live="polite"></p></section>`;
 }
 
 export function renderAdminVenues(
@@ -58,7 +58,7 @@ export function renderAdminVenues(
             : venue.moderationReason
               ? `<p><strong>Lý do:</strong> ${escapeHtml(venue.moderationReason)}</p>`
               : "";
-          return `<article class="review-card" data-venue-id="${escapeHtml(venue.id)}"><div class="booking-card__heading"><h2>${escapeHtml(venue.name)}</h2>${renderStatus(venue.status)}</div><p>${escapeHtml(venue.address)}</p>${reasonField}${actions ? `<div class="actions">${actions}</div>` : ""}</article>`;
+          return `<article class="review-card moderation-card" data-venue-id="${escapeHtml(venue.id)}"><div class="booking-card__heading"><div><p class="booking-card__label">Địa điểm</p><h2>${escapeHtml(venue.name)}</h2></div>${renderStatus(venue.status)}</div><p>${escapeHtml(venue.address)}</p>${reasonField}${actions ? `<div class="actions">${actions}</div>` : ""}</article>`;
         })
         .join("")
     : '<p class="empty-state">Không có địa điểm phù hợp.</p>';
@@ -68,7 +68,7 @@ export function renderAdminVenues(
         `<option value="${value}"${selected(filters.status, value)}>${label}</option>`,
     )
     .join("");
-  return `<section class="catalog" aria-labelledby="admin-venues-title"><div class="page-heading"><div><p class="eyebrow">Kiểm duyệt nội dung</p><h1 id="admin-venues-title">Địa điểm</h1></div></div><form class="filter-form" data-admin-filter><label for="venue-status">Trạng thái<select id="venue-status" name="status">${options}</select></label><button type="submit">Lọc địa điểm</button></form><div data-admin-list>${rows}</div>${renderAdminPagination(page)}<p class="form-status" role="status" aria-live="polite"></p></section>`;
+  return `<section class="catalog" aria-labelledby="admin-venues-title"><header class="workspace-header workspace-header--admin"><div><p class="eyebrow">Content review</p><h1 id="admin-venues-title">Địa điểm</h1><p>Kiểm tra thông tin hiển thị trước khi đưa địa điểm đến người chơi.</p></div></header><form class="filter-form" data-admin-filter><label for="venue-status">Trạng thái<select id="venue-status" name="status">${options}</select></label><button type="submit">Lọc địa điểm</button></form><div class="moderation-queue" data-admin-list>${rows}</div>${renderAdminPagination(page)}<p class="form-status" role="status" aria-live="polite"></p></section>`;
 }
 
 function mountModeration(container, config) {

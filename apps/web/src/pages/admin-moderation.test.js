@@ -26,6 +26,7 @@ describe("admin moderation", () => {
     expect(
       document.querySelector('label[for="application-status"]'),
     ).not.toBeNull();
+    expect(document.querySelector(".moderation-queue")).not.toBeNull();
   });
 
   it("allows an approved venue to be hidden with a reason", () => {
@@ -46,5 +47,8 @@ describe("admin moderation", () => {
     expect(document.querySelector('[data-action="hide"]')).not.toBeNull();
     expect(document.querySelector('[data-action="approve"]')).toBeNull();
     expect(document.querySelector('textarea[minlength="10"]')).not.toBeNull();
+    expect(
+      document.querySelector(".moderation-queue .review-card"),
+    ).not.toBeNull();
   });
 });

@@ -12,7 +12,7 @@ describe("admin audit history", () => {
           resourceType: "User",
           resourceId: "user-1",
           beforeData: { isLocked: false },
-          afterData: { isLocked: true },
+          afterData: { isLocked: true, note: "<script>alert(1)</script>" },
           createdAt: "2026-09-11T01:00:00.000Z",
           actor: { displayName: "Quản trị viên", email: "admin@example.com" },
         },
@@ -32,5 +32,9 @@ describe("admin audit history", () => {
     expect(
       document.querySelector('label[for="audit-resource-id"]'),
     ).not.toBeNull();
+    expect(
+      document.querySelector(".audit-timeline .audit-card"),
+    ).not.toBeNull();
+    expect(document.querySelector("script")).toBeNull();
   });
 });
