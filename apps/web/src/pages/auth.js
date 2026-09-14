@@ -22,13 +22,26 @@ function field(id, label, type, name, autocomplete) {
 }
 
 function page(title, fields, action) {
-  return `<section class="page-card auth-card" aria-labelledby="auth-title">
-    <h1 id="auth-title">${title}</h1>
-    <form class="stack" data-auth-form="${action}">
-      ${fields}
-      <button type="submit">${title}</button>
-      <p class="form-status" role="status" aria-live="polite"></p>
-    </form>
+  const login = action === "login";
+  return `<section class="auth-layout" aria-labelledby="auth-title">
+    <div class="auth-story">
+      <a class="auth-brand" href="/">ĐẶT<span>SÂN</span></a>
+      <div><p class="eyebrow">Urban Performance</p><h2>${login ? "Trở lại đường pitch của bạn." : "Một tài khoản. Mọi cuộc chơi."}</h2><p>Tìm đúng sân, theo dõi booking và nhận cập nhật — tất cả trong một trải nghiệm rõ ràng.</p></div>
+      <ul class="auth-benefits"><li>Lịch trống theo thời gian thực</li><li>Giá được xác nhận trước khi đặt</li><li>Thông báo xuyên suốt hành trình</li></ul>
+    </div>
+    <div class="auth-panel">
+      <div class="auth-panel__inner">
+        <p class="eyebrow">${login ? "Chào mừng trở lại" : "Bắt đầu ngay"}</p>
+        <h1 id="auth-title">${title}</h1>
+        <p class="auth-intro">${login ? "Đăng nhập để tiếp tục quản lý các trận đấu của bạn." : "Tạo tài khoản miễn phí để xác nhận booking khi đã chọn được sân."}</p>
+        <form class="stack" data-auth-form="${action}">
+          ${fields}
+          <button type="submit">${title}</button>
+          <p class="form-status" role="status" aria-live="polite"></p>
+        </form>
+        <p class="auth-switch">${login ? 'Chưa có tài khoản? <a href="/register">Đăng ký ngay</a>' : 'Đã có tài khoản? <a href="/login">Đăng nhập</a>'}</p>
+      </div>
+    </div>
   </section>`;
 }
 

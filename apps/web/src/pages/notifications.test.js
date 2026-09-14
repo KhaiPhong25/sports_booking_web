@@ -11,6 +11,7 @@ describe("customer notifications", () => {
     expect(
       document.querySelector('label[for="notification-filter"]'),
     ).not.toBeNull();
+    expect(document.querySelector('.empty-state a[href="/"]')).not.toBeNull();
   });
 
   it("identifies unread items with text and offers an owned mark-read action", () => {
@@ -44,5 +45,6 @@ describe("customer notifications", () => {
     ).not.toBeNull();
     expect(read?.textContent).toContain("Đã đọc");
     expect(read?.querySelector("button[data-mark-read]")).toBeNull();
+    expect(document.querySelector(".activity-feed")).not.toBeNull();
   });
 });

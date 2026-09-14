@@ -71,11 +71,9 @@ function canCustomerCancel(booking) {
 function bookingCard(booking, detail = false) {
   const title = `${escapeHtml(booking.venueName)} · ${escapeHtml(booking.sportName)}`;
   return `<article class="booking-card" data-booking-id="${escapeHtml(booking.id)}">
-    <h2>${detail ? title : `<a href="/bookings/${escapeHtml(booking.id)}">${title}</a>`}</h2>
-    <p><strong>Trạng thái:</strong> <span data-booking-status>${escapeHtml(statusLabels[booking.status] ?? booking.status)}</span></p>
-    <p><time datetime="${escapeHtml(booking.startAt)}">${escapeHtml(businessDateTime.format(new Date(booking.startAt)))}</time> – <time datetime="${escapeHtml(booking.endAt)}">${escapeHtml(businessDateTime.format(new Date(booking.endAt)))}</time></p>
-    <p><strong>Giá đã chốt:</strong> ${escapeHtml(vnd.format(booking.priceAmount))}</p>
-    ${canCustomerCancel(booking) ? '<button data-action="cancel" class="secondary">Hủy booking</button>' : ""}
+    <div class="booking-card__heading"><div><p class="booking-card__label">${escapeHtml(booking.sportName)}</p><h2>${detail ? title : `<a href="/bookings/${escapeHtml(booking.id)}">${title}</a>`}</h2></div><span class="status-pill status-pill--${escapeHtml(booking.status.toLowerCase())}" data-booking-status>${escapeHtml(statusLabels[booking.status] ?? booking.status)}</span></div>
+    <div class="booking-card__facts"><p><span>Thời gian</span><time datetime="${escapeHtml(booking.startAt)}">${escapeHtml(businessDateTime.format(new Date(booking.startAt)))}</time><small>đến ${escapeHtml(businessDateTime.format(new Date(booking.endAt)))}</small></p><p><span>Giá đã chốt</span><strong>${escapeHtml(vnd.format(booking.priceAmount))}</strong></p></div>
+    <div class="booking-card__footer">${detail ? '<a href="/">Tìm thêm sân</a>' : `<a href="/bookings/${escapeHtml(booking.id)}">Xem chi tiết</a>`}${canCustomerCancel(booking) ? '<button data-action="cancel" class="secondary">Hủy booking</button>' : ""}</div>
   </article>`;
 }
 
@@ -96,11 +94,11 @@ function renderBookingFilters(filters = {}) {
 }
 
 export function renderCustomerBookings(bookings = [], filters = {}) {
-  return `<section class="catalog" aria-labelledby="customer-bookings-title"><div class="page-heading"><div><p class="eyebrow">Tài khoản</p><h1 id="customer-bookings-title">Booking của tôi</h1></div><a href="/notifications">Xem thông báo</a></div>${renderBookingFilters(filters)}<div data-booking-results>${bookings.map((item) => bookingCard(item)).join("") || '<p class="empty-state">Bạn chưa có booking phù hợp.</p>'}</div><p class="form-status" role="status" aria-live="polite"></p></section>`;
+  return `<section class="catalog customer-workspace" aria-labelledby="customer-bookings-title"><header class="workspace-header"><div><p class="eyebrow">Không gian của bạn</p><h1 id="customer-bookings-title">Booking của tôi</h1><p>Theo dõi lịch chơi, trạng thái xác nhận và chi phí trong một nơi.</p></div><div class="actions"><a class="button secondary" href="/notifications">Xem thông báo</a><a class="button" href="/">Tìm sân mới</a></div></header>${renderBookingFilters(filters)}<div class="booking-list" data-booking-results>${bookings.map((item) => bookingCard(item)).join("") || '<div class="empty-state"><strong>Chưa có booking phù hợp.</strong><p>Chọn một khung giờ trống để bắt đầu cuộc chơi tiếp theo.</p><a href="/">Khám phá sân</a></div>'}</div><p class="form-status" role="status" aria-live="polite"></p></section>`;
 }
 
 export function renderCustomerBookingDetail(booking) {
-  return `<section class="catalog" aria-labelledby="booking-detail-title"><a class="back-link" href="/bookings">← Tất cả booking</a><h1 id="booking-detail-title">Chi tiết booking</h1>${bookingCard(booking, true)}<p class="form-status" role="status" aria-live="polite"></p></section>`;
+  return `<section class="catalog customer-workspace" aria-labelledby="booking-detail-title"><a class="back-link" href="/bookings">← Tất cả booking</a><header class="workspace-header"><div><p class="eyebrow">Thông tin lượt chơi</p><h1 id="booking-detail-title">Chi tiết booking</h1></div></header><div class="booking-detail-layout">${bookingCard(booking, true)}<aside class="support-card"><p class="section-kicker">Cần hỗ trợ?</p><h2>Kiểm tra trước giờ chơi</h2><p>Thông tin trạng thái luôn được đồng bộ tại đây và trong trung tâm thông báo.</p><a href="/notifications">Mở thông báo</a></aside></div><p class="form-status" role="status" aria-live="polite"></p></section>`;
 }
 
 function interval(form) {

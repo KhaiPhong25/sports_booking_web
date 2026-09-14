@@ -89,6 +89,10 @@ describe("booking pages", () => {
     expect(
       document.querySelector('a[href="/bookings/booking-1"]'),
     ).not.toBeNull();
+    expect(document.querySelector(".workspace-header")).not.toBeNull();
+    expect(
+      document.querySelector(".booking-list .booking-card"),
+    ).not.toBeNull();
   });
 
   it("hides cancellation for terminal bookings on the detail view", () => {

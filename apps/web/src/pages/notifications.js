@@ -36,9 +36,9 @@ function notificationCard(notification) {
 export function renderNotifications(items = [], filter = "all") {
   const cards = items.length
     ? items.map(notificationCard).join("")
-    : '<p class="empty-state">Bạn chưa có thông báo phù hợp.</p>';
+    : '<div class="empty-state"><strong>Bạn chưa có thông báo phù hợp.</strong><p>Các cập nhật booking sẽ xuất hiện ở đây.</p><a href="/">Tìm sân để bắt đầu</a></div>';
   return `<section class="catalog" aria-labelledby="notifications-title">
-    <div class="page-heading"><div><p class="eyebrow">Tài khoản</p><h1 id="notifications-title">Thông báo</h1></div></div>
+    <header class="workspace-header"><div><p class="eyebrow">Trung tâm hoạt động</p><h1 id="notifications-title">Thông báo</h1><p>Không bỏ lỡ thay đổi trạng thái nào trong hành trình booking.</p></div><a class="button secondary" href="/bookings">Booking của tôi</a></header>
     <form class="filter-form" data-notification-filters>
       <label for="notification-filter">Hiển thị</label>
       <select id="notification-filter" name="filter">
@@ -48,7 +48,7 @@ export function renderNotifications(items = [], filter = "all") {
       </select>
       <button type="submit">Lọc thông báo</button>
     </form>
-    <div class="notification-list">${cards}</div>
+    <div class="notification-list activity-feed">${cards}</div>
     <p class="form-status" role="status" aria-live="polite"></p>
   </section>`;
 }

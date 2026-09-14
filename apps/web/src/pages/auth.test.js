@@ -24,6 +24,8 @@ describe("authentication pages", () => {
     expect(
       document.querySelector('button[type="submit"]')?.textContent,
     ).toContain("Đăng nhập");
+    expect(document.querySelector(".auth-layout")).not.toBeNull();
+    expect(document.querySelector(".auth-panel")).not.toBeNull();
   });
 
   it("accepts only a local return path after login", () => {

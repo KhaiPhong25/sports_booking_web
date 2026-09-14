@@ -9,5 +9,8 @@ describe("owner application pages", () => {
     expect(
       document.querySelector('textarea[name="experience"]'),
     ).not.toBeNull();
+    expect(
+      document.querySelector(".application-process")?.textContent,
+    ).toContain("Xét duyệt");
   });
 });
