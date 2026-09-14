@@ -106,12 +106,13 @@ async function initialize() {
     /^\/owner\/bookings\/([^/]+)$/,
   );
   app.innerHTML = renderPage
-    ? renderShell(renderPage(), authApi.user())
+    ? renderShell(renderPage(), authApi.user(), window.location.pathname)
     : renderShell(
         venueDetailMatch || bookingDetailMatch || ownerBookingDetailMatch
           ? `<p role="status">Đang tải ${venueDetailMatch ? "địa điểm" : "booking"}…</p>`
           : undefined,
         authApi.user(),
+        window.location.pathname,
       );
   if (renderPage) mountAuthPage(app);
   if (window.location.pathname === "/owner/apply") mountOwnerApplication(app);

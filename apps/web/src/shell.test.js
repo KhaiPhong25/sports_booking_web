@@ -34,4 +34,38 @@ describe("application shell", () => {
       document.querySelector('nav[aria-label="Điều hướng quản trị"]'),
     ).toBeNull();
   });
+
+  it("marks the matching route as current without marking sibling routes", () => {
+    document.body.innerHTML = renderShell("<p>Nội dung</p>", null, "/bookings");
+
+    expect(
+      document
+        .querySelector('a[href="/bookings"]')
+        ?.getAttribute("aria-current"),
+    ).toBe("page");
+    expect(
+      document.querySelector('a[href="/"]')?.getAttribute("aria-current"),
+    ).toBeNull();
+  });
+
+  it("renders the signed-in identity and keeps role navigation route-aware", () => {
+    document.body.innerHTML = renderShell(
+      "<p>Nội dung</p>",
+      {
+        displayName: "Minh Anh",
+        email: "minh@example.com",
+        roles: ["CUSTOMER", "OWNER"],
+      },
+      "/owner",
+    );
+
+    expect(document.querySelector(".account-summary")?.textContent).toContain(
+      "Minh Anh",
+    );
+    expect(
+      document
+        .querySelector('.owner-nav a[href="/owner"]')
+        ?.getAttribute("aria-current"),
+    ).toBe("page");
+  });
 });
