@@ -1766,6 +1766,182 @@ label {
   color: var(--muted);
 }
 
+.resource-create {
+  margin-bottom: 1.25rem;
+  padding: 1.1rem 1.25rem;
+  background: var(--primary-800);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.resource-create > summary {
+  color: #fff;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.resource-create > form {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+}
+
+.resource-card {
+  margin-bottom: 1.25rem;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  border-left: 0.25rem solid var(--primary-600);
+}
+
+.resource-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.resource-card__header h2 {
+  margin-bottom: 0;
+}
+
+.resource-card__tools {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 1.25rem 0;
+  gap: 0.75rem;
+}
+
+details.resource-subsection {
+  padding: 0.9rem;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+details.resource-subsection > summary,
+.resource-subsection > .booking-card__heading {
+  font-weight: 850;
+  cursor: pointer;
+}
+
+details.resource-subsection[open] > summary {
+  margin-bottom: 1rem;
+}
+
+.resource-inventory {
+  padding-top: 0.5rem;
+}
+
+.resource-inventory > .section-heading {
+  margin: 1.5rem 0 1rem;
+}
+
+.resource-subsection.inventory-group {
+  margin-bottom: 1rem;
+  padding: 1.1rem;
+  background: #f8faf8;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.resource-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--success);
+  font-size: 0.8rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.resource-state::before {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: currentColor;
+  border-radius: 50%;
+  content: "";
+}
+
+.resource-state--paused {
+  color: var(--warning);
+}
+
+.danger-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  gap: 1rem;
+  border-top: 1px solid rgb(179 71 63 / 30%);
+}
+
+.danger-zone p {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.schedule-resource {
+  border-left-color: var(--accent-500);
+}
+
+.configuration-panel {
+  margin-top: 1.25rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.configuration-panel__heading {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  gap: 0.85rem;
+}
+
+.configuration-panel__heading > span {
+  display: grid;
+  flex: 0 0 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--primary-950);
+  background: var(--accent-500);
+  border-radius: 50%;
+  font-weight: 900;
+  place-items: center;
+}
+
+.configuration-panel__heading h3 {
+  margin-bottom: 0.25rem;
+  font-size: 1.3rem;
+}
+
+.configuration-panel__heading p {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.configuration-panel .form-grid,
+.configuration-panel .schedule-row,
+.configuration-panel .inventory-group {
+  background: var(--surface);
+}
+
+.configuration-panel .form-grid {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.configuration-panel details > summary {
+  padding: 0.7rem 0;
+  color: var(--primary-600);
+  font-weight: 850;
+  cursor: pointer;
+}
+
 @media (max-width: 64rem) {
   .header-main {
     grid-template-columns: auto 1fr;
@@ -1905,6 +2081,10 @@ label {
   .operations-panel {
     position: static;
   }
+
+  .resource-card__tools {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 34rem) {
@@ -2018,6 +2198,12 @@ label {
 
   .contact-card__links {
     grid-template-columns: 1fr;
+  }
+
+  .danger-zone,
+  .resource-card__header {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
 

@@ -47,14 +47,14 @@ function courtRow(court, offeringId) {
   const id = escapeHtml(court.id);
   return `<div class="court-row" data-court-id="${id}">
     <form class="inline-form" data-court-edit data-offering-id="${escapeHtml(offeringId)}"><label for="court-name-${id}">Tên sân con</label><input id="court-name-${id}" name="internalName" value="${escapeHtml(court.internalName)}" required /><button type="submit">Đổi tên</button></form>
-    <span>${court.isActive ? "Đang hoạt động" : "Tạm ngừng"}</span>
+    <span class="resource-state resource-state--${court.isActive ? "active" : "paused"}">${court.isActive ? "Đang hoạt động" : "Tạm ngừng"}</span>
     <button type="button" class="secondary" data-action="toggle-court" data-active="${String(!court.isActive)}">${court.isActive ? "Tạm ngừng sân" : "Mở lại sân"}</button>
   </div>`;
 }
 
 function offeringCard(offering) {
   const id = escapeHtml(offering.id);
-  return `<section class="inventory-group" data-offering-id="${id}">
+  return `<section class="inventory-group resource-subsection" data-offering-id="${id}">
     <div class="booking-card__heading"><h3>${escapeHtml(offering.sportName ?? "Môn thể thao")}</h3><span class="status-pill">${offering.isActive ? "Đang hoạt động" : "Tạm ngừng"}</span></div>
     ${offeringPolicy(offering)}
     <h4>Sân vật lý</h4>
@@ -80,18 +80,18 @@ function venueCard(venue, catalog) {
         `<option value="${escapeHtml(sport.id)}">${escapeHtml(sport.name)}</option>`,
     )
     .join("");
-  return `<article class="venue-management-card" data-venue-id="${id}">
+  return `<article class="venue-management-card resource-card" data-venue-id="${id}">
     <div class="booking-card__heading"><div><h2>${escapeHtml(venue.name)}</h2><p>${escapeHtml(venue.address)}</p></div><span class="status-pill">${escapeHtml(venueStatusLabels[venue.status] ?? venue.status)}</span></div>
     ${venue.moderationReason ? `<p class="notice"><strong>Phản hồi kiểm duyệt:</strong> ${escapeHtml(venue.moderationReason)}</p>` : ""}
-    <details><summary>Chỉnh sửa thông tin địa điểm</summary><form class="form-grid" data-venue-edit>${venueFields(`edit-${id}`, catalog.areas ?? [], venue)}<button type="submit">Lưu thông tin địa điểm</button></form></details>
-    <details><summary>Ảnh và tiện ích</summary>
+    <div class="resource-card__tools"><details class="resource-subsection"><summary>Chỉnh sửa thông tin địa điểm</summary><form class="form-grid" data-venue-edit>${venueFields(`edit-${id}`, catalog.areas ?? [], venue)}<button type="submit">Lưu thông tin địa điểm</button></form></details>
+    <details class="resource-subsection"><summary>Ảnh và tiện ích</summary>
       <form class="form-grid" data-image-form enctype="multipart/form-data"><label for="venue-image-${id}">Ảnh địa điểm</label><input id="venue-image-${id}" name="image" type="file" accept="image/jpeg,image/png,image/webp" required /><label for="venue-alt-${id}">Mô tả ảnh</label><input id="venue-alt-${id}" name="altText" minlength="2" maxlength="300" required /><button type="submit">Tải ảnh</button></form>
       <form class="checkbox-grid" data-amenities-form><fieldset><legend>Tiện ích</legend>${amenities || "<p>Chưa có tiện ích trong catalog.</p>"}</fieldset><button type="submit">Cập nhật tiện ích</button></form>
-    </details>
-    <section aria-labelledby="inventory-${id}"><h3 id="inventory-${id}">Offering và sân vật lý</h3>${(venue.offerings ?? []).map(offeringCard).join("") || '<p class="empty-state">Chưa có offering.</p>'}
+    </details></div>
+    <section class="resource-inventory" aria-labelledby="inventory-${id}"><div class="section-heading"><div><p class="section-kicker">Năng lực phục vụ</p><h3 id="inventory-${id}">Offering và sân vật lý</h3></div></div>${(venue.offerings ?? []).map(offeringCard).join("") || '<p class="empty-state">Chưa có offering.</p>'}
       <form class="form-grid" data-offering-create><h4>Thêm offering</h4><label for="new-sport-${id}">Môn thể thao</label><select id="new-sport-${id}" name="sportId" required>${sports}</select><label for="new-mode-${id}">Chế độ xác nhận</label><select id="new-mode-${id}" name="confirmationMode"><option value="INSTANT">Xác nhận ngay</option><option value="OWNER_APPROVAL">Chủ sân duyệt</option></select><label for="new-advance-${id}">Số ngày đặt trước</label><input id="new-advance-${id}" name="advanceBookingDays" type="number" value="14" min="1" max="365" required /><label for="new-cancel-${id}">Báo trước khi hủy (phút)</label><input id="new-cancel-${id}" name="cancellationNoticeMinutes" type="number" value="120" min="0" max="10080" required /><button type="submit">Thêm offering</button></form>
     </section>
-    <button type="button" class="danger" data-action="archive-venue">Lưu trữ địa điểm</button>
+    <div class="danger-zone"><div><strong>Lưu trữ địa điểm</strong><p>Địa điểm sẽ không còn xuất hiện trong khu vực vận hành.</p></div><button type="button" class="danger" data-action="archive-venue">Lưu trữ địa điểm</button></div>
   </article>`;
 }
 
@@ -101,8 +101,8 @@ export function renderOwnerVenuesPage({
   message = "",
 } = {}) {
   return `<section class="catalog" aria-labelledby="owner-venues-title">
-    <div class="page-heading"><div><p class="eyebrow">Khu vực chủ sân</p><h1 id="owner-venues-title">Địa điểm và sân con</h1></div><a href="/owner">Về tổng quan</a></div>
-    <details class="page-card"><summary>Tạo địa điểm mới</summary><form class="form-grid" data-venue-create>${venueFields("create-venue", catalog.areas ?? [])}<button type="submit">Gửi địa điểm để duyệt</button></form></details>
+    <header class="workspace-header"><div><p class="eyebrow">Hệ thống tài nguyên</p><h1 id="owner-venues-title">Địa điểm và sân con</h1><p>Quản lý hồ sơ địa điểm, môn thể thao cung cấp và trạng thái từng sân vật lý.</p></div><a class="button secondary" href="/owner">Về tổng quan</a></header>
+    <details class="resource-create"><summary>Tạo địa điểm mới</summary><form class="form-grid" data-venue-create>${venueFields("create-venue", catalog.areas ?? [])}<button type="submit">Gửi địa điểm để duyệt</button></form></details>
     <div class="management-list">${venues.map((venue) => venueCard(venue, catalog)).join("") || '<p class="empty-state">Bạn chưa có địa điểm.</p>'}</div>
     <p class="form-status" role="status" aria-live="polite">${escapeHtml(message)}</p>
   </section>`;

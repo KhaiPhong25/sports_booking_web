@@ -58,6 +58,9 @@ describe("owner schedule and pricing page", () => {
       document.querySelector('[data-action="delete-price"]'),
     ).not.toBeNull();
     expect(document.body.textContent).toContain("Cầu lông");
+    expect(document.querySelector(".schedule-panel")).not.toBeNull();
+    expect(document.querySelector(".closure-panel")).not.toBeNull();
+    expect(document.querySelector(".pricing-panel")).not.toBeNull();
   });
 
   it("uses unique form control ids when an owner manages multiple venues", () => {

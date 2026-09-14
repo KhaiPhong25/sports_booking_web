@@ -57,6 +57,8 @@ describe("owner venue and inventory page", () => {
     expect(
       document.querySelector('[data-venue-edit] [name="areaId"]')?.value,
     ).toBe("area-1");
+    expect(document.querySelector(".resource-card")).not.toBeNull();
+    expect(document.querySelector(".resource-subsection")).not.toBeNull();
   });
 
   it("renders readable offering policy and court edit/maintenance controls", () => {
@@ -81,5 +83,6 @@ describe("owner venue and inventory page", () => {
       document.querySelector('[data-amenities-form] [value="amenity-2"]')
         ?.checked,
     ).toBe(false);
+    expect(document.querySelector(".court-row .resource-state")).not.toBeNull();
   });
 });

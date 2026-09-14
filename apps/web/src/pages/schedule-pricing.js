@@ -106,16 +106,16 @@ function pricingForm(rule, offeringId) {
 function venueSchedule(venue) {
   const id = escapeHtml(venue.id);
   const courts = allCourts(venue);
-  return `<article class="venue-management-card" data-venue-id="${id}">
-    <h2>${escapeHtml(venue.name)}</h2>
-    <section aria-labelledby="hours-title-${id}"><h3 id="hours-title-${id}">Giờ hoạt động hằng tuần</h3>
+  return `<article class="venue-management-card resource-card schedule-resource" data-venue-id="${id}">
+    <header class="resource-card__header"><div><p class="section-kicker">Cấu hình địa điểm</p><h2>${escapeHtml(venue.name)}</h2></div><span class="status-pill">Đang quản lý</span></header>
+    <section class="configuration-panel schedule-panel" aria-labelledby="hours-title-${id}"><div class="configuration-panel__heading"><span>01</span><div><h3 id="hours-title-${id}">Giờ hoạt động hằng tuần</h3><p>Định nghĩa các khung giờ địa điểm sẵn sàng nhận booking.</p></div></div>
       <form class="stack" data-hours-form>${(venue.operatingHours ?? []).map((window, index) => hourRow(window, index, false, venue.id)).join("")}${hourRow(null, (venue.operatingHours ?? []).length, true, venue.id)}<button type="submit">Lưu giờ hoạt động</button></form>
     </section>
-    <section aria-labelledby="closures-title-${id}"><h3 id="closures-title-${id}">Đóng sân đặc biệt</h3>
+    <section class="configuration-panel closure-panel" aria-labelledby="closures-title-${id}"><div class="configuration-panel__heading"><span>02</span><div><h3 id="closures-title-${id}">Đóng sân đặc biệt</h3><p>Chặn toàn địa điểm hoặc một sân con trong khoảng thời gian cụ thể.</p></div></div>
       <div class="management-list">${(venue.closures ?? []).map((closure) => closureForm(closure, courts, venue.id)).join("") || '<p class="empty-state">Chưa có closure.</p>'}</div>
       <details><summary>Thêm closure</summary>${closureForm(null, courts, venue.id)}</details>
     </section>
-    <section aria-labelledby="pricing-title-${id}"><h3 id="pricing-title-${id}">Bảng giá theo offering</h3>
+    <section class="configuration-panel pricing-panel" aria-labelledby="pricing-title-${id}"><div class="configuration-panel__heading"><span>03</span><div><h3 id="pricing-title-${id}">Bảng giá theo offering</h3><p>Thiết lập mức giá mỗi 30 phút theo ngày và khung giờ.</p></div></div>
       ${
         (venue.offerings ?? [])
           .map(
@@ -130,7 +130,7 @@ function venueSchedule(venue) {
 }
 
 export function renderOwnerSchedulePricing(venues = [], message = "") {
-  return `<section class="catalog" aria-labelledby="owner-schedule-title"><div class="page-heading"><div><p class="eyebrow">Khu vực chủ sân</p><h1 id="owner-schedule-title">Lịch hoạt động và bảng giá</h1></div><a href="/owner">Về tổng quan</a></div>${venues.map(venueSchedule).join("") || '<p class="empty-state">Bạn chưa có địa điểm.</p>'}<p class="form-status" role="status" aria-live="polite">${escapeHtml(message)}</p></section>`;
+  return `<section class="catalog" aria-labelledby="owner-schedule-title"><header class="workspace-header"><div><p class="eyebrow">Quy tắc vận hành</p><h1 id="owner-schedule-title">Lịch hoạt động và bảng giá</h1><p>Xây nhịp mở cửa, thời gian tạm đóng và mức giá cho từng môn thể thao.</p></div><a class="button secondary" href="/owner">Về tổng quan</a></header>${venues.map(venueSchedule).join("") || '<div class="empty-state"><strong>Bạn chưa có địa điểm.</strong><p>Tạo địa điểm trước khi cấu hình lịch và giá.</p><a href="/owner/venues">Quản lý địa điểm</a></div>'}<p class="form-status" role="status" aria-live="polite">${escapeHtml(message)}</p></section>`;
 }
 
 async function loadScheduleData() {
