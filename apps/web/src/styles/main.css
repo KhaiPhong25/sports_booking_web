@@ -1844,6 +1844,40 @@ details.resource-subsection[open] > summary {
   border-radius: var(--radius-md);
 }
 
+.resource-subsection.inventory-group > summary {
+  align-items: center;
+  cursor: pointer;
+  list-style-position: outside;
+}
+
+.resource-subsection.inventory-group > summary strong {
+  font-size: 1.05rem;
+}
+
+.resource-subsection.inventory-group[open] > summary {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.resource-add {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  background: var(--surface-soft);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+}
+
+.resource-add > summary {
+  color: var(--primary-600);
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.resource-add[open] > summary {
+  margin-bottom: 1rem;
+}
+
 .resource-state {
   display: inline-flex;
   align-items: center;

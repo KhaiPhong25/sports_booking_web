@@ -2,10 +2,10 @@ import { escapeHtml } from "./components/html.js";
 import { icon } from "./components/icons.js";
 
 function currentAttribute(href, pathname) {
-  const isCurrent =
-    href === "/"
-      ? pathname === "/"
-      : pathname === href || pathname.startsWith(`${href}/`);
+  const exactRoutes = new Set(["/", "/owner", "/admin"]);
+  const isCurrent = exactRoutes.has(href)
+    ? pathname === href
+    : pathname === href || pathname.startsWith(`${href}/`);
   return isCurrent ? ' aria-current="page"' : "";
 }
 

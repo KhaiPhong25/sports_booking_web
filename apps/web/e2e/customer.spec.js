@@ -134,8 +134,17 @@ test("khách xem lịch, đăng nhập rồi đặt và quản lý booking", asy
   await page.goto("/");
 
   await expect(
-    page.getByRole("heading", { name: "Tìm sân thể thao" }),
+    page.getByRole("heading", { name: /Sân phù hợp.*Giờ chơi của bạn/ }),
   ).toBeVisible();
+  await expect(page.locator(".discovery-hero")).toBeVisible();
+  await expect(page.locator(".discovery-hero__media")).toHaveAttribute(
+    "src",
+    "/assets/sports-hero.png",
+  );
+  await expect(page.locator('.primary-nav a[href="/"]')).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
   await page.getByLabel("Môn thể thao").selectOption("sport-badminton");
   await page.getByLabel("Khu vực").selectOption("area-q1");
   await page.getByLabel("Ngày").fill("2026-10-10");
@@ -176,10 +185,11 @@ test("khách xem lịch, đăng nhập rồi đặt và quản lý booking", asy
   await expect(
     page.getByRole("heading", { name: "Chi tiết booking" }),
   ).toBeVisible();
+  await expect(page.locator(".booking-detail-layout")).toBeVisible();
   await page.getByRole("button", { name: "Hủy booking" }).click();
   await expect(page.getByText("Đã hủy", { exact: true })).toBeVisible();
 
-  await page.getByRole("link", { name: "Thông báo" }).click();
+  await page.getByRole("link", { name: "Thông báo", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Thông báo" })).toBeVisible();
   await page.getByRole("button", { name: "Đánh dấu đã đọc" }).click();
   await expect(
@@ -195,9 +205,13 @@ test("giao diện mobile có skip link và điều khiển truy cập bằng bà
   await page.goto("/");
 
   await page.keyboard.press("Tab");
-  await expect(
-    page.getByRole("link", { name: "Bỏ qua điều hướng" }),
-  ).toBeFocused();
+  const skipLink = page.getByRole("link", { name: "Bỏ qua điều hướng" });
+  await expect(skipLink).toBeFocused();
+  expect(
+    await skipLink.evaluate(
+      (element) => globalThis.getComputedStyle(element).outlineStyle,
+    ),
+  ).not.toBe("none");
   await expect(page.locator("body")).not.toHaveCSS("overflow-x", "scroll");
   expect(
     await page.evaluate(
@@ -210,4 +224,23 @@ test("giao diện mobile có skip link và điều khiển truy cập bằng bà
     page.getByRole("navigation", { name: "Điều hướng chính" }),
   ).toBeVisible();
   await expect(page.getByLabel("Môn thể thao")).toBeVisible();
+  expect(
+    await page
+      .locator(".discovery-hero__media")
+      .evaluate(
+        (image) =>
+          image instanceof globalThis.HTMLImageElement &&
+          image.naturalWidth > 0,
+      ),
+  ).toBe(true);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  expect(
+    await page
+      .locator(".venue-card")
+      .evaluate((element) =>
+        Number.parseFloat(
+          globalThis.getComputedStyle(element).transitionDuration,
+        ),
+      ),
+  ).toBeLessThanOrEqual(0.001);
 });

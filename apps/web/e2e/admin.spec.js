@@ -143,8 +143,10 @@ test("admin quản lý user, hồ sơ owner, venue và xem audit", async ({
   await expect(
     page.getByRole("heading", { name: "Tổng quan hệ thống" }),
   ).toBeVisible();
+  await expect(page.locator(".workspace-hero--admin")).toBeVisible();
 
   await page.getByRole("link", { name: "Quản lý người dùng" }).click();
+  await expect(page.locator(".data-row")).toBeVisible();
   await page.getByLabel("Tìm kiếm").fill("Nguyễn An");
   await page.getByRole("button", { name: "Lọc tài khoản" }).click();
   page.once("dialog", (dialog) => dialog.accept());
@@ -152,6 +154,7 @@ test("admin quản lý user, hồ sơ owner, venue và xem audit", async ({
   await expect(page.getByRole("button", { name: "Mở khóa" })).toBeVisible();
 
   await page.goto("/admin/owner-applications");
+  await expect(page.locator(".moderation-queue")).toBeVisible();
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Duyệt hồ sơ" }).click();
   await expect(
@@ -187,6 +190,7 @@ test("admin quản lý user, hồ sơ owner, venue và xem audit", async ({
   await page.getByRole("button", { name: "Lọc lịch sử" }).click();
   await expect(page).toHaveURL(/action=USER_LOCKED/);
   await expect(page.locator(".audit-card")).toHaveCount(1);
+  await expect(page.locator(".audit-timeline")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "USER_LOCKED" }),
   ).toBeVisible();
@@ -219,6 +223,9 @@ test("admin navigation và filters dùng được trên mobile", async ({ page }
     page.getByRole("navigation", { name: "Điều hướng quản trị" }),
   ).toBeVisible();
   await expect(page.getByLabel("Vai trò")).toBeVisible();
+  await expect(
+    page.locator('.admin-nav a[href="/admin/users"]'),
+  ).toHaveAttribute("aria-current", "page");
 });
 
 test("route dashboard admin chính xác yêu cầu đăng nhập", async ({ page }) => {

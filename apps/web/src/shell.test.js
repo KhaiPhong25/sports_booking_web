@@ -68,4 +68,18 @@ describe("application shell", () => {
         ?.getAttribute("aria-current"),
     ).toBe("page");
   });
+
+  it("marks only the specific workspace route as current", () => {
+    document.body.innerHTML = renderShell(
+      "<p>Nội dung</p>",
+      { roles: ["OWNER"] },
+      "/owner/calendar",
+    );
+
+    const currentLinks = document.querySelectorAll(
+      '.owner-nav a[aria-current="page"]',
+    );
+    expect(currentLinks).toHaveLength(1);
+    expect(currentLinks[0]?.getAttribute("href")).toBe("/owner/calendar");
+  });
 });

@@ -54,13 +54,13 @@ function courtRow(court, offeringId) {
 
 function offeringCard(offering) {
   const id = escapeHtml(offering.id);
-  return `<section class="inventory-group resource-subsection" data-offering-id="${id}">
-    <div class="booking-card__heading"><h3>${escapeHtml(offering.sportName ?? "Môn thể thao")}</h3><span class="status-pill">${offering.isActive ? "Đang hoạt động" : "Tạm ngừng"}</span></div>
+  return `<details class="inventory-group resource-subsection" data-offering-id="${id}">
+    <summary class="booking-card__heading"><strong>${escapeHtml(offering.sportName ?? "Môn thể thao")}</strong><span class="status-pill">${offering.isActive ? "Đang hoạt động" : "Tạm ngừng"}</span></summary>
     ${offeringPolicy(offering)}
     <h4>Sân vật lý</h4>
     <div class="court-list">${(offering.courts ?? []).map((court) => courtRow(court, offering.id)).join("") || '<p class="empty-state">Chưa có sân con.</p>'}</div>
     <form class="inline-form" data-court-create><label for="new-court-${id}">Tên sân con mới</label><input id="new-court-${id}" name="internalName" required /><button type="submit">Thêm sân con</button></form>
-  </section>`;
+  </details>`;
 }
 
 function venueCard(venue, catalog) {
@@ -89,7 +89,7 @@ function venueCard(venue, catalog) {
       <form class="checkbox-grid" data-amenities-form><fieldset><legend>Tiện ích</legend>${amenities || "<p>Chưa có tiện ích trong catalog.</p>"}</fieldset><button type="submit">Cập nhật tiện ích</button></form>
     </details></div>
     <section class="resource-inventory" aria-labelledby="inventory-${id}"><div class="section-heading"><div><p class="section-kicker">Năng lực phục vụ</p><h3 id="inventory-${id}">Offering và sân vật lý</h3></div></div>${(venue.offerings ?? []).map(offeringCard).join("") || '<p class="empty-state">Chưa có offering.</p>'}
-      <form class="form-grid" data-offering-create><h4>Thêm offering</h4><label for="new-sport-${id}">Môn thể thao</label><select id="new-sport-${id}" name="sportId" required>${sports}</select><label for="new-mode-${id}">Chế độ xác nhận</label><select id="new-mode-${id}" name="confirmationMode"><option value="INSTANT">Xác nhận ngay</option><option value="OWNER_APPROVAL">Chủ sân duyệt</option></select><label for="new-advance-${id}">Số ngày đặt trước</label><input id="new-advance-${id}" name="advanceBookingDays" type="number" value="14" min="1" max="365" required /><label for="new-cancel-${id}">Báo trước khi hủy (phút)</label><input id="new-cancel-${id}" name="cancellationNoticeMinutes" type="number" value="120" min="0" max="10080" required /><button type="submit">Thêm offering</button></form>
+      <details class="resource-add"><summary>Thêm offering mới</summary><form class="form-grid" data-offering-create><label for="new-sport-${id}">Môn thể thao</label><select id="new-sport-${id}" name="sportId" required>${sports}</select><label for="new-mode-${id}">Chế độ xác nhận</label><select id="new-mode-${id}" name="confirmationMode"><option value="INSTANT">Xác nhận ngay</option><option value="OWNER_APPROVAL">Chủ sân duyệt</option></select><label for="new-advance-${id}">Số ngày đặt trước</label><input id="new-advance-${id}" name="advanceBookingDays" type="number" value="14" min="1" max="365" required /><label for="new-cancel-${id}">Báo trước khi hủy (phút)</label><input id="new-cancel-${id}" name="cancellationNoticeMinutes" type="number" value="120" min="0" max="10080" required /><button type="submit">Thêm offering</button></form></details>
     </section>
     <div class="danger-zone"><div><strong>Lưu trữ địa điểm</strong><p>Địa điểm sẽ không còn xuất hiện trong khu vực vận hành.</p></div><button type="button" class="danger" data-action="archive-venue">Lưu trữ địa điểm</button></div>
   </article>`;

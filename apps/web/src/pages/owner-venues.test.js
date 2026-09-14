@@ -59,6 +59,9 @@ describe("owner venue and inventory page", () => {
     ).toBe("area-1");
     expect(document.querySelector(".resource-card")).not.toBeNull();
     expect(document.querySelector(".resource-subsection")).not.toBeNull();
+    expect(
+      document.querySelector("details [data-offering-create]"),
+    ).not.toBeNull();
   });
 
   it("renders readable offering policy and court edit/maintenance controls", () => {
@@ -69,6 +72,9 @@ describe("owner venue and inventory page", () => {
 
     expect(document.body.textContent).toContain("Cầu lông");
     expect(document.querySelector("[data-offering-edit]")).not.toBeNull();
+    expect(
+      document.querySelector("details[data-offering-id='offering-1']"),
+    ).not.toBeNull();
     expect(
       document.querySelector('[data-court-id="court-1"] [data-court-edit]'),
     ).not.toBeNull();

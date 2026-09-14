@@ -156,18 +156,21 @@ test("owner vận hành booking, inventory, lịch và giá trong một hành tr
 
   await page.goto("/owner");
   await expect(
-    page.getByRole("heading", { name: "Tổng quan vận hành" }),
+    page.getByRole("heading", { name: "Giữ mọi sân đúng nhịp." }),
   ).toBeVisible();
+  await expect(page.locator(".workspace-hero--owner")).toBeVisible();
   await expect(page.getByText("Booking chờ duyệt")).toBeVisible();
 
   await page.getByRole("link", { name: "Lịch booking" }).first().click();
   await expect(
     page.getByRole("heading", { name: "Lịch booking" }),
   ).toBeVisible();
+  await expect(page.locator(".calendar-toolbar")).toBeVisible();
   await page.getByLabel("Tuần chứa ngày").fill("2026-09-14");
   await page.getByRole("button", { name: "Xem lịch" }).click();
   await page.getByRole("link", { name: "Xem booking" }).click();
   await expect(page.getByText("customer@example.com")).toBeVisible();
+  await expect(page.locator(".operations-panel")).toBeVisible();
 
   await page.getByRole("button", { name: "Duyệt booking" }).click();
   await expect(
@@ -190,7 +193,13 @@ test("owner vận hành booking, inventory, lịch và giá trong một hành tr
   ).toBeVisible();
 
   await venueCard
+    .locator('details[data-offering-id="offering-1"] > summary')
+    .click();
+  await venueCard
     .getByRole("button", { name: "Lưu chính sách offering" })
+    .click();
+  await venueCard
+    .locator('details[data-offering-id="offering-1"] > summary')
     .click();
   await venueCard.getByLabel("Tên sân con").first().fill("Sân Trung Tâm");
   await venueCard.getByRole("button", { name: "Đổi tên" }).first().click();

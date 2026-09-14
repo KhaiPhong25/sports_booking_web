@@ -109,7 +109,7 @@ export function renderPublicVenues(
         <p class="eyebrow">Chơi đúng nhịp · TP. Hồ Chí Minh</p>
         <h1 id="venues-title">Sân phù hợp.<br />Giờ chơi của bạn.</h1>
         <p>Khám phá địa điểm đã duyệt, kiểm tra lịch trống và đặt sân trong một luồng rõ ràng.</p>
-        ${sportChips ? `<div class="sport-chips" aria-label="Môn thể thao phổ biến">${sportChips}</div>` : ""}
+        ${sportChips ? `<div class="sport-chips" aria-label="Lựa chọn phổ biến">${sportChips}</div>` : ""}
       </div>
       <div class="search-dock">${renderVenueSearchForm(catalog, criteria)}</div>
     </section>
