@@ -1,4 +1,5 @@
 import { escapeHtml } from "../components/html.js";
+import { icon } from "../components/icons.js";
 import { apiRequest } from "../services/api.js";
 import { fetchAllOwnerBookings } from "./owner-bookings.js";
 
@@ -15,18 +16,19 @@ export function renderOwnerDashboard({ venues = [], bookings = [] } = {}) {
     (booking) => booking.status === "CONFIRMED",
   ).length;
   return `<section class="catalog owner-dashboard" aria-labelledby="owner-dashboard-title">
-    <div class="page-heading"><div><p class="eyebrow">Khu vực chủ sân</p><h1 id="owner-dashboard-title">Tổng quan vận hành</h1></div></div>
+    <header class="workspace-hero workspace-hero--owner"><div><p class="eyebrow">Trung tâm vận hành</p><h1 id="owner-dashboard-title">Giữ mọi sân<br />đúng nhịp.</h1><p>Từ lượt đặt đang chờ đến lịch hoạt động — toàn bộ tín hiệu quan trọng nằm trong một bảng điều khiển.</p></div><div class="workspace-hero__signal"><span>Live operations</span><strong>${pending}</strong><small>booking cần xử lý</small></div></header>
     <div class="metric-grid">
       ${metric("Địa điểm đang quản lý", venues.length, "venues")}
       ${metric("Địa điểm đã duyệt", approved, "approved")}
       ${metric("Booking chờ duyệt", pending, "pending")}
       ${metric("Booking đã xác nhận", confirmed, "confirmed")}
     </div>
+    <div class="section-heading"><div><p class="section-kicker">Điều phối nhanh</p><h2>Chọn khu vực cần xử lý</h2></div></div>
     <nav class="owner-actions" aria-label="Tác vụ chủ sân">
-      <a class="action-card" href="/owner/calendar"><strong>Lịch booking</strong><span>Xem lịch vận hành theo tuần</span></a>
-      <a class="action-card" href="/owner/bookings"><strong>Quản lý booking</strong><span>Duyệt, từ chối, hủy hoặc chuyển sân</span></a>
-      <a class="action-card" href="/owner/venues"><strong>Địa điểm và sân con</strong><span>Quản lý venue, offering và court</span></a>
-      <a class="action-card" href="/owner/schedule"><strong>Lịch hoạt động và giá</strong><span>Quản lý giờ mở cửa, closure và pricing</span></a>
+      <a class="action-card" href="/owner/calendar">${icon("calendar", "action-card__icon")}<strong>Lịch booking</strong><span>Xem lịch vận hành theo tuần</span><b>Xem lịch →</b></a>
+      <a class="action-card" href="/owner/bookings">${icon("booking", "action-card__icon")}<strong>Quản lý booking</strong><span>Duyệt, từ chối, hủy hoặc chuyển sân</span><b>Mở hàng đợi →</b></a>
+      <a class="action-card" href="/owner/venues">${icon("venue", "action-card__icon")}<strong>Địa điểm và sân con</strong><span>Quản lý venue, offering và court</span><b>Quản lý sân →</b></a>
+      <a class="action-card" href="/owner/schedule">${icon("calendar", "action-card__icon")}<strong>Lịch hoạt động và giá</strong><span>Quản lý giờ mở cửa, closure và pricing</span><b>Thiết lập →</b></a>
     </nav>
   </section>`;
 }

@@ -25,5 +25,6 @@ describe("owner dashboard", () => {
       document.querySelector('a[href="/owner/calendar"]')?.textContent,
     ).toContain("Lịch booking");
     expect(document.querySelector('a[href="/owner/venues"]')).not.toBeNull();
+    expect(document.querySelector(".workspace-hero--owner")).not.toBeNull();
   });
 });

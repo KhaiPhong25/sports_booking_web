@@ -43,5 +43,9 @@ describe("owner weekly booking calendar", () => {
     expect(
       document.querySelector('[data-week-nav="next"]')?.getAttribute("href"),
     ).toContain("week=2026-09-21");
+    expect(
+      document.querySelector(".week-calendar .calendar-day"),
+    ).not.toBeNull();
+    expect(document.querySelector(".calendar-toolbar")).not.toBeNull();
   });
 });

@@ -98,13 +98,13 @@ export function renderOwnerCalendar({
     addDays(range.startDate, index),
   );
   return `<section class="catalog" aria-labelledby="owner-calendar-title">
-    <div class="page-heading"><div><p class="eyebrow">Khu vực chủ sân</p><h1 id="owner-calendar-title">Lịch booking</h1></div><a href="/owner">Về tổng quan</a></div>
-    <form class="filter-form" method="get" action="/owner/calendar">
+    <header class="workspace-header"><div><p class="eyebrow">Điều phối theo tuần</p><h1 id="owner-calendar-title">Lịch booking</h1><p>Quan sát công suất theo ngày và mở nhanh từng booking cần xử lý.</p></div><a class="button secondary" href="/owner">Về tổng quan</a></header>
+    <div class="calendar-toolbar"><form class="filter-form" method="get" action="/owner/calendar">
       <label for="calendar-week">Tuần chứa ngày</label><input id="calendar-week" name="week" type="date" value="${escapeHtml(range.startDate)}" />
       <label for="calendar-venue">Địa điểm</label><select id="calendar-venue" name="venueId"><option value="">Tất cả địa điểm</option>${venueOptions}</select>
       <button type="submit">Xem lịch</button>
     </form>
-    <div class="calendar-nav"><a data-week-nav="previous" href="/owner/calendar?week=${addDays(range.startDate, -7)}${venueQuery}">← Tuần trước</a><span>${escapeHtml(range.startDate)} – ${escapeHtml(addDays(range.endDate, -1))}</span><a data-week-nav="next" href="/owner/calendar?week=${range.endDate}${venueQuery}">Tuần sau →</a></div>
+    <div class="calendar-nav"><a data-week-nav="previous" href="/owner/calendar?week=${addDays(range.startDate, -7)}${venueQuery}">← Tuần trước</a><strong>${escapeHtml(range.startDate)} – ${escapeHtml(addDays(range.endDate, -1))}</strong><a data-week-nav="next" href="/owner/calendar?week=${range.endDate}${venueQuery}">Tuần sau →</a></div></div>
     <div class="week-calendar" role="list" aria-label="Booking từ ${escapeHtml(range.startDate)} đến ${escapeHtml(range.endDate)}">
       ${days
         .map((day) => {

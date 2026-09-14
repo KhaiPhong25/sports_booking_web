@@ -25,10 +25,9 @@ function statusLabel(status) {
 
 function bookingSummary(booking) {
   return `<article class="booking-card" data-booking-id="${escapeHtml(booking.id)}">
-    <div class="booking-card__heading"><h2>${escapeHtml(booking.venueName)} · ${escapeHtml(booking.sportName)}</h2><span class="status-pill status-pill--${escapeHtml(booking.status.toLowerCase())}">${escapeHtml(statusLabel(booking.status))}</span></div>
-    <p><time datetime="${escapeHtml(booking.startAt)}">${escapeHtml(businessDateTime.format(new Date(booking.startAt)))}</time> – <time datetime="${escapeHtml(booking.endAt)}">${escapeHtml(businessDateTime.format(new Date(booking.endAt)))}</time></p>
-    <p><strong>Sân vật lý:</strong> ${escapeHtml(booking.courtName ?? "Chưa phân")}</p>
-    <a href="/owner/bookings/${escapeHtml(booking.id)}">Xem booking</a>
+    <div class="booking-card__heading"><div><p class="booking-card__label">${escapeHtml(booking.sportName)}</p><h2>${escapeHtml(booking.venueName)}</h2></div><span class="status-pill status-pill--${escapeHtml(booking.status.toLowerCase())}">${escapeHtml(statusLabel(booking.status))}</span></div>
+    <div class="booking-card__facts"><p><span>Khung giờ</span><time datetime="${escapeHtml(booking.startAt)}">${escapeHtml(businessDateTime.format(new Date(booking.startAt)))}</time><small>đến ${escapeHtml(businessDateTime.format(new Date(booking.endAt)))}</small></p><p><span>Sân vật lý</span><strong>${escapeHtml(booking.courtName ?? "Chưa phân")}</strong></p></div>
+    <div class="booking-card__footer"><a href="/owner/bookings/${escapeHtml(booking.id)}">Mở booking →</a></div>
   </article>`;
 }
 
@@ -61,9 +60,9 @@ export function renderOwnerBookings({
   filters = {},
 } = {}) {
   return `<section class="catalog" aria-labelledby="owner-bookings-title">
-    <div class="page-heading"><div><p class="eyebrow">Khu vực chủ sân</p><h1 id="owner-bookings-title">Quản lý booking</h1></div><div class="actions"><a href="/owner/calendar">Xem dạng lịch</a><a href="/owner">Về tổng quan</a></div></div>
+    <header class="workspace-header"><div><p class="eyebrow">Hàng đợi vận hành</p><h1 id="owner-bookings-title">Quản lý booking</h1><p>Duyệt yêu cầu, theo dõi sân được phân và xử lý thay đổi từ một nơi.</p></div><div class="actions"><a class="button secondary" href="/owner/calendar">Xem dạng lịch</a><a class="button" href="/owner">Về tổng quan</a></div></header>
     ${ownerBookingFilters(venues, filters)}
-    <div data-owner-booking-results>${bookings.map(bookingSummary).join("") || '<p class="empty-state">Không có booking phù hợp.</p>'}</div>
+    <div class="booking-list" data-owner-booking-results>${bookings.map(bookingSummary).join("") || '<div class="empty-state"><strong>Không có booking phù hợp.</strong><p>Điều chỉnh bộ lọc hoặc kiểm tra lại ở chế độ lịch.</p></div>'}</div>
     <p class="form-status" role="status" aria-live="polite"></p>
   </section>`;
 }
@@ -79,7 +78,8 @@ function actionControls(booking, courts) {
         `<option value="${escapeHtml(court.id)}">${escapeHtml(court.internalName)}</option>`,
     )
     .join("");
-  return `<form class="owner-booking-actions" data-owner-booking-actions>
+  return `<form class="owner-booking-actions operations-panel" data-owner-booking-actions>
+    <div><p class="section-kicker">Tác vụ vận hành</p><h2>Xử lý booking</h2><p>Kiểm tra thông tin khách và sân trước khi cập nhật trạng thái.</p></div>
     <label for="owner-action-reason">Lý do từ chối/hủy</label><input id="owner-action-reason" name="reason" minlength="3" maxlength="500" />
     <label for="owner-action-court">Chuyển sang sân</label><select id="owner-action-court" name="courtId"${alternatives.length ? "" : " disabled"}><option value="">${alternatives.length ? "Chọn sân thay thế" : "Không có sân thay thế"}</option>${courtOptions}</select>
     <div class="actions">
@@ -94,18 +94,15 @@ export function renderOwnerBookingDetail(booking, courts = []) {
   const customer = booking.customer ?? {};
   return `<section class="catalog" aria-labelledby="owner-booking-detail-title">
     <a class="back-link" href="/owner/bookings">← Danh sách booking</a>
-    <article class="page-card booking-detail" data-booking-id="${escapeHtml(booking.id)}">
+    <article class="booking-detail" data-booking-id="${escapeHtml(booking.id)}">
       <div class="booking-card__heading"><div><p class="eyebrow">Chi tiết booking</p><h1 id="owner-booking-detail-title">${escapeHtml(booking.venueName)} · ${escapeHtml(booking.sportName)}</h1></div><span class="status-pill status-pill--${escapeHtml(booking.status.toLowerCase())}" data-booking-status>${escapeHtml(statusLabel(booking.status))}</span></div>
-      <dl class="detail-list">
+      <div class="owner-booking-layout"><div class="booking-detail__main"><dl class="detail-list">
         <div><dt>Thời gian</dt><dd><time datetime="${escapeHtml(booking.startAt)}">${escapeHtml(businessDateTime.format(new Date(booking.startAt)))}</time> – <time datetime="${escapeHtml(booking.endAt)}">${escapeHtml(businessDateTime.format(new Date(booking.endAt)))}</time></dd></div>
         <div><dt>Sân vật lý</dt><dd>${escapeHtml(booking.courtName ?? "Chưa phân")}</dd></div>
         <div><dt>Giá đã chốt</dt><dd>${escapeHtml(vnd.format(booking.priceAmount))}</dd></div>
-        <div><dt>Khách hàng</dt><dd>${escapeHtml(customer.displayName ?? "Chưa có thông tin")}</dd></div>
-        <div><dt>Email</dt><dd>${customer.email ? `<a href="mailto:${escapeHtml(customer.email)}">${escapeHtml(customer.email)}</a>` : "Chưa có"}</dd></div>
-        <div><dt>Điện thoại</dt><dd>${customer.phone ? `<a href="tel:${escapeHtml(customer.phone)}">${escapeHtml(customer.phone)}</a>` : "Chưa có"}</dd></div>
         ${booking.cancellationReason ? `<div><dt>Lý do hủy</dt><dd>${escapeHtml(booking.cancellationReason)}</dd></div>` : ""}
-      </dl>
-      ${actionControls(booking, courts)}
+      </dl><section class="contact-card"><p class="section-kicker">Liên hệ khách hàng</p><h2>${escapeHtml(customer.displayName ?? "Chưa có thông tin")}</h2><div class="contact-card__links"><p><span>Email</span>${customer.email ? `<a href="mailto:${escapeHtml(customer.email)}">${escapeHtml(customer.email)}</a>` : "Chưa có"}</p><p><span>Điện thoại</span>${customer.phone ? `<a href="tel:${escapeHtml(customer.phone)}">${escapeHtml(customer.phone)}</a>` : "Chưa có"}</p></div></section></div>
+      ${actionControls(booking, courts)}</div>
       <p class="form-status" role="status" aria-live="polite"></p>
     </article>
   </section>`;

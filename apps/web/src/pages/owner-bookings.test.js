@@ -91,6 +91,8 @@ describe("owner booking pages", () => {
     expect(
       document.querySelector('[name="courtId"] option[value="court-3"]'),
     ).toBeNull();
+    expect(document.querySelector(".operations-panel")).not.toBeNull();
+    expect(document.querySelector(".contact-card")).not.toBeNull();
   });
 
   it("does not render mutation controls for a terminal booking", () => {
