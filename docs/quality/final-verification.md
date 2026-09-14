@@ -157,3 +157,52 @@ Thứ tự đọc từ Phase 00 đến Phase 12 được duy trì tại [mục l
 ## 9. Section XIV acceptance re-run
 
 Ngày 2026-09-12 đã audit lại 25/25 acceptance criteria và chạy mới quality gate, API PostgreSQL/MinIO integration, API E2E, worker PostgreSQL/MailHog và Playwright. Lượt chạy phát hiện rồi sửa drift MinIO credentials trong test harness và race chờ render ở admin browser test. Kết quả, command và giới hạn Docker registry được ghi tại [báo cáo Testing Acceptance Criteria](testing-acceptance-report.md).
+
+## 10. Urban Performance frontend redesign
+
+**Ngày kiểm tra:** 2026-09-14
+
+Toàn bộ frontend public, customer, owner và admin đã được chuyển sang một design system thống nhất mà không đổi API contract hoặc logic backend. Design system dùng navy `#081724`, lime `#b8d93d`, nền trung tính `#f3f5f2`, system font tự host-free, radius 12–24 px, soft shadow, focus ring rõ và reduced-motion fallback.
+
+### Phạm vi đã audit
+
+- Global shell: sticky header, brand mark code-native, primary/role navigation, account summary và chính xác một `aria-current` cho route cụ thể.
+- Public: hero thể thao, search dock, sport chips, value strip, venue card media-first, local fallback và venue detail có booking rail cùng bản đồ.
+- Anonymous flow: người chưa đăng nhập vẫn tìm sân, xem lịch trống và nhận báo giá; chỉ bước xác nhận booking chuyển đến đăng nhập rồi quay về URL trước đó.
+- Customer: auth split layout, owner application explainer, booking workspace/detail và notification activity feed.
+- Owner: operations dashboard, weekly calendar, booking action panel, contact card, resource hierarchy, disclosure summary-first, schedule/closure/pricing panels và danger zone.
+- Admin: system-control dashboard, identity rows, moderation queues, audit timeline, shared status/filter/pagination/error states.
+- Responsive/accessibility: layout tại 375 px, 768 px và 1440 px; skip link, focus ring, semantic label/live region, text status, local image load, no horizontal page overflow và `prefers-reduced-motion`.
+- Security/data flow: giữ nguyên escaping cho API text và audit JSON, role-gated navigation, route guard, idempotency key, timezone `Asia/Ho_Chi_Minh` và mutation endpoints.
+
+### Generated asset
+
+- Project asset: `apps/web/public/assets/sports-hero.png`.
+- Kích thước nguồn: 1672×941 PNG, khoảng 2.1 MB; Vite production build sao chép thành công đến `dist/assets/sports-hero.png`.
+- Chế độ: built-in image generation, photorealistic-natural.
+- Prompt cuối: “Cinematic urban multi-sport court in Ho Chi Minh City at blue hour; subtle football, basketball and badminton cues; distant unidentifiable athletes in motion; wide landscape with court leading lines and dark negative space for Vietnamese UI; premium stadium lighting; deep navy, natural court green and restrained lime; realistic photography; no text, logo, watermark, brand signage, recognizable close-up faces or oversaturated neon.”
+
+### Verification evidence
+
+Các lệnh quality gate mới nhất:
+
+```bash
+npm test -w @sports-booking/web
+npm run typecheck -w @sports-booking/web
+npm run lint -w @sports-booking/web
+npm run build -w @sports-booking/web
+npm run test:e2e -w @sports-booking/web
+npm run format:check
+git diff --check
+```
+
+Kết quả:
+
+- Vitest: 19 files, 53/53 tests đạt.
+- TypeScript check và ESLint: đạt, không lỗi.
+- Vite production build: đạt, 33 modules transformed; CSS 50.80 kB và application JS 91.72 kB trước gzip.
+- Chromium Playwright: 7/7 critical customer/owner/admin/mobile journeys đạt.
+- Visual smoke một lần: 14 route đại diện × 3 viewport (375×812, 768×1024, 1440×900), tổng 42 lượt render; không alert ngoài dự kiến và không horizontal page overflow. Đã kiểm tra bằng mắt public hero/card, auth, owner calendar/resources và admin audit. Smoke spec tạm không được giữ trong repository để tránh nhân đôi API fixture; assertion ổn định đã được chuyển vào ba E2E suite chính.
+- Prettier và `git diff --check`: đạt.
+
+Không có thay đổi trong `apps/api`, `apps/worker`, Prisma, PostgreSQL, Redis, S3/MinIO hoặc Docker. Venue ảnh chưa có dữ liệu dùng fallback code-native; hero là asset raster nội bộ duy nhất được thêm trong redesign.
