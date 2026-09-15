@@ -23,6 +23,8 @@ function mapUser(user: PrismaIdentityUser): IdentityUser {
     phone: user.phone,
     displayName: user.displayName,
     passwordHash: user.passwordHash,
+    avatarObjectKey: user.avatarObjectKey,
+    avatarUpdatedAt: user.avatarUpdatedAt,
     isLocked: user.isLocked,
     securityVersion: user.securityVersion,
     roles: user.roles.map(({ role }) => role.name as RoleName),
@@ -120,6 +122,22 @@ export class PrismaIdentityRepository implements IdentityRepository {
       await this.prisma.user.update({
         where: { id },
         data: input,
+        include: userWithRoles,
+      }),
+    );
+  }
+
+  async setAvatar(
+    id: string,
+    objectKey: string | null,
+  ): Promise<IdentityUser> {
+    return mapUser(
+      await this.prisma.user.update({
+        where: { id },
+        data: {
+          avatarObjectKey: objectKey,
+          avatarUpdatedAt: objectKey ? new Date() : null,
+        },
         include: userWithRoles,
       }),
     );

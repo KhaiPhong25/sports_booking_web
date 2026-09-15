@@ -6,6 +6,8 @@ export interface IdentityUser {
   phone: string;
   displayName: string;
   passwordHash: string;
+  avatarObjectKey: string | null;
+  avatarUpdatedAt: Date | null;
   isLocked: boolean;
   securityVersion: number;
   roles: RoleName[];

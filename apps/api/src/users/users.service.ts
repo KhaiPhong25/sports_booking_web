@@ -10,6 +10,7 @@ import {
   IdentityRepository,
 } from "../auth/identity.repository";
 import { normalizeVietnamesePhone } from "../auth/phone";
+import { toPublicUser } from "../auth/public-user";
 
 @Injectable()
 export class UsersService {
@@ -21,7 +22,7 @@ export class UsersService {
   async profile(userId: string) {
     const user = await this.repository.findUserById(userId);
     if (!user) throw new NotFoundException("User not found");
-    return this.publicUser(user);
+    return toPublicUser(user);
   }
 
   async updateProfile(
@@ -32,7 +33,7 @@ export class UsersService {
       ...(input.displayName ? { displayName: input.displayName.trim() } : {}),
       ...(input.phone ? { phone: normalizeVietnamesePhone(input.phone) } : {}),
     });
-    return this.publicUser(user);
+    return toPublicUser(user);
   }
 
   async adminList(filters: {
@@ -75,16 +76,4 @@ export class UsersService {
     return { id: user.id, isLocked: user.isLocked };
   }
 
-  private publicUser(
-    user: Awaited<ReturnType<IdentityRepository["findUserById"]>>,
-  ) {
-    if (!user) throw new NotFoundException("User not found");
-    return {
-      id: user.id,
-      email: user.email,
-      phone: user.phone,
-      displayName: user.displayName,
-      roles: user.roles,
-    };
-  }
 }
