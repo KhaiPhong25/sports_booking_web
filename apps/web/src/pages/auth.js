@@ -21,7 +21,7 @@ function field(id, label, type, name, autocomplete) {
   return `<label for="${id}">${label}</label><input id="${id}" name="${name}" type="${type}" autocomplete="${autocomplete}" required />`;
 }
 
-function page(title, fields, action) {
+function page(title, fields, action, notice = "") {
   const login = action === "login";
   return `<section class="auth-layout" aria-labelledby="auth-title">
     <div class="auth-story">
@@ -34,6 +34,7 @@ function page(title, fields, action) {
         <p class="eyebrow">${login ? "Chào mừng trở lại" : "Bắt đầu ngay"}</p>
         <h1 id="auth-title">${title}</h1>
         <p class="auth-intro">${login ? "Đăng nhập để tiếp tục quản lý các trận đấu của bạn." : "Tạo tài khoản miễn phí để xác nhận booking khi đã chọn được sân."}</p>
+        ${notice}
         <form class="stack" data-auth-form="${action}">
           ${fields}
           <button type="submit">${title}</button>
@@ -64,7 +65,9 @@ export function renderRegisterPage() {
   );
 }
 
-export function renderLoginPage() {
+export function renderLoginPage(search = window.location.search) {
+  const passwordChanged =
+    new window.URLSearchParams(search).get("reason") === "password-changed";
   return page(
     "Đăng nhập",
     [
@@ -78,6 +81,9 @@ export function renderLoginPage() {
       ),
     ].join(""),
     "login",
+    passwordChanged
+      ? '<p class="notice auth-notice" role="status">Mật khẩu đã được thay đổi. Vui lòng đăng nhập lại bằng mật khẩu mới.</p>'
+      : "",
   );
 }
 

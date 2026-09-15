@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 function jsonResponse(body, status = 200) {
@@ -74,7 +75,9 @@ describe("profileApi", () => {
 
   it("uploads avatar bytes as FormData without forcing a content type", async () => {
     const { authApi, profileApi } = await signedInSubject();
-    const file = new File(["avatar"], "avatar.png", { type: "image/png" });
+    const file = new window.File(["avatar"], "avatar.png", {
+      type: "image/png",
+    });
     fetch.mockResolvedValueOnce(
       jsonResponse({ ...authApi.user(), avatarUrl: "/avatar?v=2" }),
     );
