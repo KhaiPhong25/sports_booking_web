@@ -38,6 +38,7 @@ import { AuthRateLimitService } from "./auth-rate-limit.service";
     AccessTokenGuard,
     RolesGuard,
     AuthRateLimitGuard,
+    AuthRateLimitService,
   ],
 })
 export class AuthModule {}

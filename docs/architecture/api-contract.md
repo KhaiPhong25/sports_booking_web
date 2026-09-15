@@ -18,6 +18,7 @@ Mọi endpoint nằm dưới `/api/v1`; Swagger UI ở `/docs`, OpenAPI JSON ở
 | GET    | `/venues/:venueId`                    | —                                            | approved venue detail                     |
 | GET    | `/offerings/:offeringId/availability` | `startAt,endAt`                              | `{available,capacity}`                    |
 | POST   | `/offerings/:offeringId/quotes`       | `{startAt,endAt}`                            | `{amount,currency,breakdown}`             |
+| GET    | `/users/:userId/avatar`               | —                                            | binary JPEG/PNG/WebP hoặc `404`           |
 
 Public không được gọi `POST /bookings`.
 
@@ -29,6 +30,9 @@ Public venue list/detail trả mỗi offering với `sportId` để lọc và `s
 | ------ | ----------------------------- | ------------------------------------------------------ | -------------------------- |
 | GET    | `/me`                         | bearer token                                           | profile + roles            |
 | PATCH  | `/me`                         | `{displayName,phone}`                                  | profile                    |
+| POST   | `/me/avatar`                  | multipart field `avatar`                               | profile có `avatarUrl` mới |
+| DELETE | `/me/avatar`                  | bearer token                                           | `204`                      |
+| PATCH  | `/me/password`                | `{currentPassword,newPassword}`                        | `204` + xóa refresh cookie |
 | POST   | `/bookings`                   | header `Idempotency-Key`; `{offeringId,startAt,endAt}` | booking snapshot           |
 | GET    | `/bookings`                   | `status?,from?,to?,page,pageSize,sort`                 | booking list của principal |
 | GET    | `/bookings/:bookingId`        | —                                                      | booking của principal      |
@@ -37,6 +41,10 @@ Public venue list/detail trả mỗi offering với `sportId` để lọc và `s
 | POST   | `/notifications/:id/read`     | —                                                      | notification               |
 | POST   | `/owner-applications`         | `{businessName,experience}`                            | application                |
 | GET    | `/owner-applications`         | `page,pageSize`                                        | applications của principal |
+
+Profile response chỉ trả `id`, `email`, `phone`, `displayName`, `roles` và `avatarUrl`; không trả password hash, storage object key hoặc security version. `email` và `roles` là read-only. Avatar nhận JPEG, PNG hoặc WebP tối đa 2 MiB, kiểm tra cả MIME và file signature. Binary nằm trong MinIO; client đọc ảnh qua public `GET /users/:userId/avatar`, còn `avatarUrl` có query version để tránh cache cũ. Xóa avatar là idempotent.
+
+`newPassword` phải dài 12–128 ký tự. Đổi mật khẩu thành công tăng security version, revoke mọi refresh session, xóa refresh cookie và khiến access token cũ bị từ chối; giao diện xóa session local rồi chuyển tới `/login?reason=password-changed` để đăng nhập lại.
 
 ## Owner
 
