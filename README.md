@@ -19,6 +19,8 @@ Dự án đã hoàn thành MVP qua Phase 12: nền tảng, authentication/users,
 
 Host Node 26 chưa nằm trong dải runtime đã khóa. Dockerfiles dùng Node 24 để có môi trường lặp lại được.
 
+Nếu dùng Fish trên CachyOS/Arch Linux, `nvm` có thể không tồn tại. Xem cách cài Node 24 LTS và xử lý lỗi `node_modules` tại [hướng dẫn vận hành local](docs/guides/local-development.md).
+
 ## Khởi động nhanh
 
 ```bash

@@ -7,6 +7,16 @@
 - Docker Engine có Compose v2.
 - Các port local còn trống: `3000`, `5173`, `5432`, `6379`, `8025`, `9000`, `9001`; SMTP dùng `1025`.
 
+`nvm` không được cài sẵn và bản shell integration phổ biến không hoạt động trực tiếp trong Fish. Trên CachyOS/Arch Linux, có thể dùng package Node 24 LTS của hệ thống:
+
+```fish
+sudo pacman -S nodejs-lts-krypton npm
+node --version
+npm --version
+```
+
+`node --version` phải trả về `v24.x`. Lệnh `pacman` có thể hỏi xác nhận thay package `nodejs` current bằng `nodejs-lts-krypton`; đây là thay đổi toolchain toàn máy, không phải dependency của riêng repository.
+
 Không commit `.env`. `.env.example` chỉ chứa giá trị local để học và phải được thay bằng secret mạnh khi deploy.
 
 ## 2. Docker-first
@@ -37,7 +47,7 @@ Khởi động dependency trước:
 
 ```bash
 test -f .env || cp .env.example .env
-npm install
+npm ci
 docker compose up -d postgres redis mailhog minio
 npm run db:generate -w @sports-booking/api
 npm run db:migrate -w @sports-booking/api
@@ -175,4 +185,17 @@ docker compose up -d
 
 ### Node/npm cảnh báo version
 
-Chạy `node --version` và `npm --version`. Project khóa Node dưới 25; dùng một bản Node 24 LTS tương thích với npm đang cài hoặc chạy qua Docker để tránh drift host toolchain.
+Chạy `node --version` và `npm --version`. Project khóa Node dưới 25; dùng Node 24 LTS tương thích với npm đang cài hoặc chạy qua Docker để tránh drift host toolchain. Nếu Fish báo `Unknown command: nvm`, đừng tiếp tục gọi `nvm`; dùng package `nodejs-lts-krypton` như phần yêu cầu hệ thống hoặc cài một version manager có hỗ trợ Fish.
+
+### `npm ci` báo `ENOTDIR` tại `node_modules`
+
+`node_modules` phải là thư mục do npm tạo và không được Git theo dõi. Kiểm tra bằng:
+
+```bash
+git ls-files -s | awk '$1 == "120000" { print $4 }'
+find . -maxdepth 3 -type l -name node_modules -print
+```
+
+Nếu output chứa `node_modules` hoặc `apps/api/node_modules`, checkout đang giữ symlink cũ bị commit nhầm. Xóa đúng hai Git entry đó, pull commit sửa lỗi rồi chạy lại `npm ci`; không tạo symlink `node_modules` trong branch `main`.
+
+Với npm 12, repository dùng `allowScripts` đã pin version để cho phép install scripts cần thiết của Prisma, Argon2, esbuild và các native helper; telemetry `@scarf/scarf` bị từ chối. Không dùng `npm install-scripts approve --all` mà chưa review dependency.
