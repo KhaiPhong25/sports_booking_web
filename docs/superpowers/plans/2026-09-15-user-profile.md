@@ -40,6 +40,7 @@
 ### Task 1: Persistent avatar metadata and safe public user projection
 
 **Files:**
+
 - Create: `apps/api/prisma/migrations/20260915000000_user_profile_avatar/migration.sql`
 - Create: `apps/api/src/auth/public-user.ts`
 - Create: `apps/api/src/auth/public-user.spec.ts`
@@ -54,6 +55,7 @@
 - Test: `apps/api/test/database-schema.integration-spec.ts`
 
 **Interfaces:**
+
 - Consumes: Prisma `User`, existing `IdentityUser`, auth register/login/refresh flows.
 - Produces: `toPublicUser(user): PublicUser`, `IdentityRepository.setAvatar(id, objectKey)`, and avatar fields used by Tasks 2–5.
 
@@ -187,6 +189,7 @@ git commit -m "feat(profile): persist avatar metadata"
 ### Task 2: Validated local avatar storage and HTTP endpoints
 
 **Files:**
+
 - Create: `apps/api/src/storage/user-avatar-policy.ts`
 - Create: `apps/api/src/storage/user-avatar-policy.spec.ts`
 - Create: `apps/api/src/users/user-avatars.controller.ts`
@@ -198,6 +201,7 @@ git commit -m "feat(profile): persist avatar metadata"
 - Modify: `apps/api/test/object-storage.integration-spec.ts`
 
 **Interfaces:**
+
 - Consumes: `IdentityRepository.setAvatar`, `toPublicUser`, `OBJECT_STORAGE`, authenticated `Principal`.
 - Produces: `POST/DELETE /me/avatar`, `GET /users/:id/avatar`, `validateUserAvatar`, and `ObjectStorage.deleteObject`.
 
@@ -261,9 +265,7 @@ Build `UserAvatarsController` with a real `UsersService`, in-memory identity rep
 expect(uploadedProfile.avatarUrl).toMatch(
   /^\/api\/v1\/users\/[^/]+\/avatar\?v=\d+$/,
 );
-expect([...storage.objects.keys()]).toEqual([
-  `user-avatars/${user.id}/avatar`,
-]);
+expect([...storage.objects.keys()]).toEqual([`user-avatars/${user.id}/avatar`]);
 ```
 
 Also assert invalid signature returns `400`, public read returns exact bytes plus `Content-Type`, delete returns `204`, and upload without bearer token returns `401`.
@@ -325,6 +327,7 @@ git commit -m "feat(profile): add local avatar management"
 ### Task 3: Secure password change and session revocation
 
 **Files:**
+
 - Create: `apps/api/src/auth/auth-cookie.ts`
 - Create: `apps/api/src/users/dto/change-password.dto.ts`
 - Modify: `apps/api/src/auth/auth.controller.ts`
@@ -338,6 +341,7 @@ git commit -m "feat(profile): add local avatar management"
 - Test: `apps/api/test/auth.e2e-spec.ts`
 
 **Interfaces:**
+
 - Consumes: `PasswordService`, `securityVersion`, refresh sessions and `AccessTokenGuard`.
 - Produces: `AuthService.changePassword`, atomic `IdentityRepository.changePassword`, and `PATCH /me/password`.
 
@@ -452,6 +456,7 @@ git commit -m "feat(profile): secure password changes"
 ### Task 4: Profile client, protected route and account navigation
 
 **Files:**
+
 - Create: `apps/web/src/services/profile-api.js`
 - Create: `apps/web/src/services/profile-api.test.js`
 - Modify: `apps/web/src/services/auth-api.js`
@@ -460,9 +465,9 @@ git commit -m "feat(profile): secure password changes"
 - Modify: `apps/web/src/services/route-access.test.js`
 - Modify: `apps/web/src/shell.js`
 - Modify: `apps/web/src/shell.test.js`
-- Modify: `apps/web/src/main.js`
 
 **Interfaces:**
+
 - Consumes: `apiRequest`, `authApi.user()` and server profile endpoints.
 - Produces: `profileApi`, `authApi.replaceUser`, `authApi.clearSession`, protected `/profile`, clickable account summary.
 
@@ -516,7 +521,10 @@ export const profileApi = {
   get: async () => authApi.replaceUser(await apiRequest("/me")),
   update: async (payload) =>
     authApi.replaceUser(
-      await apiRequest("/me", { method: "PATCH", body: JSON.stringify(payload) }),
+      await apiRequest("/me", {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      }),
     ),
   uploadAvatar: async (file) => {
     const body = new FormData();
@@ -555,7 +563,7 @@ Expected: FAIL because profile is not protected and account summary is not a lin
 
 - [ ] **Step 6: Implement route and shell behavior**
 
-Add `/profile` to exact protected paths. Render the authenticated account summary as a route-aware link. Escape both URL and alt text before interpolation. Import `renderProfilePage`/`mountProfilePage` in `main.js`, register `"/profile"`, render it with `authApi.user()`, and mount only on that pathname.
+Add `/profile` to exact protected paths. Render the authenticated account summary as a route-aware link. Escape both URL and alt text before interpolation. Route wiring in `main.js` follows in Task 5 after `profile.js` has been created test-first.
 
 - [ ] **Step 7: Verify client/navigation GREEN**
 
@@ -571,7 +579,7 @@ Expected: selected tests and web typecheck PASS.
 - [ ] **Step 8: Commit Task 4**
 
 ```bash
-git add apps/web/src/services/profile-api.js apps/web/src/services/profile-api.test.js apps/web/src/services/auth-api.js apps/web/src/services/auth-api.test.js apps/web/src/services/route-access.js apps/web/src/services/route-access.test.js apps/web/src/shell.js apps/web/src/shell.test.js apps/web/src/main.js
+git add apps/web/src/services/profile-api.js apps/web/src/services/profile-api.test.js apps/web/src/services/auth-api.js apps/web/src/services/auth-api.test.js apps/web/src/services/route-access.js apps/web/src/services/route-access.test.js apps/web/src/shell.js apps/web/src/shell.test.js docs/superpowers/plans/2026-09-15-user-profile.md
 git commit -m "feat(profile): connect profile route and session"
 ```
 
@@ -580,12 +588,15 @@ git commit -m "feat(profile): connect profile route and session"
 ### Task 5: Responsive Urban Performance profile page
 
 **Files:**
+
 - Create: `apps/web/src/pages/profile.js`
 - Create: `apps/web/src/pages/profile.test.js`
+- Modify: `apps/web/src/main.js`
 - Modify: `apps/web/src/styles/main.css`
 - Test: `apps/web/src/shell.test.js`
 
 **Interfaces:**
+
 - Consumes: `profileApi`, authenticated public user, shared `escapeHtml`, design tokens from `main.css`.
 - Produces: `renderProfilePage(user)`, `mountProfilePage(container)`, avatar preview, profile/password form behavior.
 
@@ -638,7 +649,7 @@ Use `escapeHtml` for every server-derived value and use Vietnamese role labels: 
 Mock `profileApi` at its public boundary. Assert profile submit sends exactly `{ displayName, phone }`, valid file change creates a preview URL, upload/remove update the rendered avatar, mismatch confirmation does not call `changePassword`, and success redirects to:
 
 ```js
-"/login?reason=password-changed"
+"/login?reason=password-changed";
 ```
 
 Also assert each submit disables only its own action while pending and restores it after failure.
@@ -708,12 +719,14 @@ git commit -m "feat(profile): build responsive account experience"
 ### Task 6: Database-backed acceptance tests, documentation and full verification
 
 **Files:**
+
 - Create: `apps/api/test/profile.e2e-spec.ts`
 - Create: `docs/learning-notes/user-profile.md`
 - Modify: `docs/architecture/api-contract.md`
 - Modify: `README.md`
 
 **Interfaces:**
+
 - Consumes: all APIs and UI contracts from Tasks 1–5, Docker Compose PostgreSQL/MinIO.
 - Produces: regression evidence, updated API contract and Vietnamese learning handoff.
 

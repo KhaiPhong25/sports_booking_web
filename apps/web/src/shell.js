@@ -38,7 +38,7 @@ export function renderShell(
       </nav>`
     : "";
   const account = user
-    ? `<div class="account-summary"><span class="account-avatar" aria-hidden="true">${escapeHtml((user.displayName ?? user.email ?? "U").slice(0, 1).toUpperCase())}</span><span><strong>${escapeHtml(user.displayName ?? "Tài khoản")}</strong><small>${escapeHtml(user.email ?? roles.join(" · "))}</small></span></div>`
+    ? `<a class="account-summary" href="/profile"${currentAttribute("/profile", pathname)}>${user.avatarUrl ? `<img class="account-avatar" src="${escapeHtml(user.avatarUrl)}" alt="Ảnh đại diện của ${escapeHtml(user.displayName ?? "tài khoản")}" />` : `<span class="account-avatar" data-account-fallback aria-hidden="true">${escapeHtml((user.displayName ?? user.email ?? "U").slice(0, 1).toUpperCase())}</span>`}<span><strong>${escapeHtml(user.displayName ?? "Tài khoản")}</strong><small>${escapeHtml(user.email ?? roles.join(" · "))}</small></span></a>`
     : `<div class="account-actions"><a href="/login"${currentAttribute("/login", pathname)}>Đăng nhập</a><a class="button button--compact" href="/register"${currentAttribute("/register", pathname)}>Đăng ký</a></div>`;
 
   return `

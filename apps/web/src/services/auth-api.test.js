@@ -29,4 +29,16 @@ describe("authApi.ensureSession", () => {
       expect.objectContaining({ method: "POST", credentials: "include" }),
     );
   });
+
+  it("can replace and clear the in-memory identity without a network request", async () => {
+    const { authApi } = await import("./auth-api.js");
+    const user = { id: "user-1", roles: ["CUSTOMER"], avatarUrl: null };
+
+    expect(authApi.replaceUser(user)).toBe(user);
+    expect(authApi.user()).toBe(user);
+    authApi.clearSession();
+    expect(authApi.user()).toBeNull();
+    expect(authApi.token()).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+  });
 });

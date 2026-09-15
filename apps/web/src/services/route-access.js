@@ -3,6 +3,7 @@ const exactProtectedPaths = new Set([
   "/owner",
   "/bookings",
   "/notifications",
+  "/profile",
 ]);
 const protectedPrefixes = ["/admin/", "/owner/", "/bookings/"];
 
