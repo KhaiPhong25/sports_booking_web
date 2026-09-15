@@ -36,6 +36,17 @@ export class UsersService {
     return toPublicUser(user);
   }
 
+  async avatarObject(userId: string): Promise<{ objectKey: string } | null> {
+    const user = await this.repository.findUserById(userId);
+    if (!user) throw new NotFoundException("User not found");
+    return user.avatarObjectKey ? { objectKey: user.avatarObjectKey } : null;
+  }
+
+  async setAvatar(userId: string, objectKey: string | null) {
+    const user = await this.repository.setAvatar(userId, objectKey);
+    return toPublicUser(user);
+  }
+
   async adminList(filters: {
     query?: string;
     locked?: boolean;
@@ -75,5 +86,4 @@ export class UsersService {
     const user = await this.repository.setLocked(userId, locked, actorId);
     return { id: user.id, isLocked: user.isLocked };
   }
-
 }
