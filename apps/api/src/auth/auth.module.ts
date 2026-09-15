@@ -32,6 +32,12 @@ import { AuthRateLimitService } from "./auth-rate-limit.service";
     AuthRateLimitService,
     AuthRateLimitGuard,
   ],
-  exports: [AuthService, IDENTITY_REPOSITORY, AccessTokenGuard, RolesGuard],
+  exports: [
+    AuthService,
+    IDENTITY_REPOSITORY,
+    AccessTokenGuard,
+    RolesGuard,
+    AuthRateLimitGuard,
+  ],
 })
 export class AuthModule {}

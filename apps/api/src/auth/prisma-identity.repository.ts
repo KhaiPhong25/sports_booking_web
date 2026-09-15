@@ -127,10 +127,7 @@ export class PrismaIdentityRepository implements IdentityRepository {
     );
   }
 
-  async setAvatar(
-    id: string,
-    objectKey: string | null,
-  ): Promise<IdentityUser> {
+  async setAvatar(id: string, objectKey: string | null): Promise<IdentityUser> {
     return mapUser(
       await this.prisma.user.update({
         where: { id },
@@ -141,6 +138,19 @@ export class PrismaIdentityRepository implements IdentityRepository {
         include: userWithRoles,
       }),
     );
+  }
+
+  async changePassword(id: string, passwordHash: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id },
+        data: { passwordHash, securityVersion: { increment: 1 } },
+      });
+      await tx.refreshSession.updateMany({
+        where: { userId: id, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+    });
   }
 
   async setLocked(

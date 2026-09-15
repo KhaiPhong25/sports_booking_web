@@ -67,14 +67,22 @@ export class InMemoryIdentityRepository implements IdentityRepository {
     return structuredClone(user);
   }
 
-  async setAvatar(
-    id: string,
-    objectKey: string | null,
-  ): Promise<IdentityUser> {
+  async setAvatar(id: string, objectKey: string | null): Promise<IdentityUser> {
     const user = this.requiredUser(id);
     user.avatarObjectKey = objectKey;
     user.avatarUpdatedAt = objectKey ? new Date() : null;
     return structuredClone(user);
+  }
+
+  async changePassword(id: string, passwordHash: string): Promise<void> {
+    const user = this.requiredUser(id);
+    user.passwordHash = passwordHash;
+    user.securityVersion += 1;
+    for (const session of this.sessions.values()) {
+      if (session.userId === id && !session.revokedAt) {
+        session.revokedAt = new Date();
+      }
+    }
   }
 
   async setLocked(id: string, locked: boolean): Promise<IdentityUser> {

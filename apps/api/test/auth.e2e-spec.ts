@@ -165,4 +165,53 @@ describe("authentication API", () => {
       );
     expect(response.status).toBe(401);
   });
+
+  it("changes a password, clears the refresh cookie and invalidates old credentials", async () => {
+    const agent = request.agent(app.getHttpServer());
+    const registration = await agent
+      .post("/api/v1/auth/register")
+      .send({
+        email: "change-password@example.com",
+        password: "StrongPass123!",
+        phone: "0901234575",
+        displayName: "Password User",
+      })
+      .expect(201);
+    const oldAccessToken = registration.body.accessToken as string;
+
+    const changed = await agent
+      .patch("/api/v1/me/password")
+      .set("Authorization", `Bearer ${oldAccessToken}`)
+      .send({
+        currentPassword: "StrongPass123!",
+        newPassword: "NewStrongPass123!",
+      })
+      .expect(204);
+
+    const clearedCookie = changed.headers["set-cookie"]?.[0] ?? "";
+    expect(clearedCookie).toContain("sports_refresh=;");
+    expect(clearedCookie).toContain("Path=/api/v1/auth");
+    await request(app.getHttpServer())
+      .get("/api/v1/me")
+      .set("Authorization", `Bearer ${oldAccessToken}`)
+      .expect(401);
+    await agent
+      .post("/api/v1/auth/refresh")
+      .set("Origin", "http://localhost:5173")
+      .expect(401);
+    await request(app.getHttpServer())
+      .post("/api/v1/auth/login")
+      .send({
+        email: "change-password@example.com",
+        password: "StrongPass123!",
+      })
+      .expect(401);
+    await request(app.getHttpServer())
+      .post("/api/v1/auth/login")
+      .send({
+        email: "change-password@example.com",
+        password: "NewStrongPass123!",
+      })
+      .expect(200);
+  });
 });

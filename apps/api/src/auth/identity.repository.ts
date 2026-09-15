@@ -32,6 +32,7 @@ export interface IdentityRepository {
     input: { displayName?: string; phone?: string },
   ): Promise<IdentityUser>;
   setAvatar(id: string, objectKey: string | null): Promise<IdentityUser>;
+  changePassword(id: string, passwordHash: string): Promise<void>;
   setLocked(
     id: string,
     locked: boolean,

@@ -1,4 +1,8 @@
-import { ConflictException, UnauthorizedException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { InMemoryIdentityRepository } from "./testing/in-memory-identity.repository";
 import { PasswordService } from "./password.service";
@@ -99,6 +103,85 @@ describe("AuthService", () => {
         { email: "locked@example.com", password: "StrongPass123!" },
         "agent",
       ),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it("does not mutate credentials when the current password is wrong", async () => {
+    const { repository, service } = createSubject();
+    const registration = await service.register({
+      email: "wrong-current@example.com",
+      password: "StrongPass123!",
+      phone: "0901234572",
+      displayName: "Wrong Current",
+    });
+    const before = await repository.findUserById(registration.user.id);
+
+    await expect(
+      service.changePassword(
+        registration.user.id,
+        "WrongPass123!",
+        "NewStrongPass123!",
+      ),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+
+    const after = await repository.findUserById(registration.user.id);
+    expect(after?.passwordHash).toBe(before?.passwordHash);
+    expect(after?.securityVersion).toBe(1);
+    expect(repository.activeSessions()).toHaveLength(1);
+  });
+
+  it("rejects reusing the current password", async () => {
+    const { service } = createSubject();
+    const registration = await service.register({
+      email: "same-password@example.com",
+      password: "StrongPass123!",
+      phone: "0901234573",
+      displayName: "Same Password",
+    });
+
+    await expect(
+      service.changePassword(
+        registration.user.id,
+        "StrongPass123!",
+        "StrongPass123!",
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it("changes the hash and invalidates every existing session", async () => {
+    const { repository, passwords, service } = createSubject();
+    const registration = await service.register({
+      email: "changed-password@example.com",
+      password: "StrongPass123!",
+      phone: "0901234574",
+      displayName: "Changed Password",
+    });
+    const secondSession = await service.login(
+      {
+        email: "changed-password@example.com",
+        password: "StrongPass123!",
+      },
+      "second-device",
+    );
+    expect(repository.activeSessions()).toHaveLength(2);
+
+    await service.changePassword(
+      registration.user.id,
+      "StrongPass123!",
+      "NewStrongPass123!",
+    );
+
+    const stored = await repository.findUserById(registration.user.id);
+    expect(stored?.securityVersion).toBe(2);
+    expect(
+      await passwords.verify(stored?.passwordHash ?? "", "NewStrongPass123!"),
+    ).toBe(true);
+    expect(
+      await passwords.verify(stored?.passwordHash ?? "", "StrongPass123!"),
+    ).toBe(false);
+    expect(repository.activeSessions()).toHaveLength(0);
+    await expect(
+      service.authenticateAccessToken(secondSession.accessToken),
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });

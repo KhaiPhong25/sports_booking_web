@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -143,6 +144,30 @@ export class AuthService {
     } catch {
       return;
     }
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const user = await this.repository.findUserById(userId);
+    if (
+      !user ||
+      user.isLocked ||
+      !(await this.passwords.verify(user.passwordHash, currentPassword))
+    ) {
+      throw new UnauthorizedException("Current password is incorrect");
+    }
+    if (await this.passwords.verify(user.passwordHash, newPassword)) {
+      throw new BadRequestException(
+        "New password must be different from current password",
+      );
+    }
+    await this.repository.changePassword(
+      user.id,
+      await this.passwords.hash(newPassword),
+    );
   }
 
   async authenticateAccessToken(accessToken: string): Promise<Principal> {

@@ -12,11 +12,10 @@ import { ConfigService } from "@nestjs/config";
 import { ApiTags } from "@nestjs/swagger";
 import { Request, Response } from "express";
 import { AuthService, AuthResult } from "./auth.service";
+import { REFRESH_COOKIE_NAME, REFRESH_COOKIE_PATH } from "./auth-cookie";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { AuthRateLimitGuard } from "./auth-rate-limit.guard";
-
-const refreshCookie = "sports_refresh";
 
 @ApiTags("auth")
 @UseGuards(AuthRateLimitGuard)
@@ -59,7 +58,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     this.assertTrustedOrigin(request);
-    const token = request.cookies?.[refreshCookie] as string | undefined;
+    const token = request.cookies?.[REFRESH_COOKIE_NAME] as string | undefined;
     if (!token) throw new UnauthorizedException("Refresh cookie is required");
     const result = await this.auth.refresh(
       token,
@@ -76,9 +75,9 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     this.assertTrustedOrigin(request);
-    const token = request.cookies?.[refreshCookie] as string | undefined;
+    const token = request.cookies?.[REFRESH_COOKIE_NAME] as string | undefined;
     if (token) await this.auth.logout(token);
-    response.clearCookie(refreshCookie, { path: "/api/v1/auth" });
+    response.clearCookie(REFRESH_COOKIE_NAME, { path: REFRESH_COOKIE_PATH });
   }
 
   private assertTrustedOrigin(request: Request): void {
@@ -90,11 +89,11 @@ export class AuthController {
   }
 
   private writeRefreshCookie(response: Response, result: AuthResult): void {
-    response.cookie(refreshCookie, result.refreshToken, {
+    response.cookie(REFRESH_COOKIE_NAME, result.refreshToken, {
       httpOnly: true,
       secure: this.config.get<string>("NODE_ENV") === "production",
       sameSite: "strict",
-      path: "/api/v1/auth",
+      path: REFRESH_COOKIE_PATH,
       expires: result.refreshExpiresAt,
     });
   }
