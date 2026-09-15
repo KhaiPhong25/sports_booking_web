@@ -59,6 +59,8 @@ model User {
   phone                String
   displayName          String                 @map("display_name")
   passwordHash         String                 @map("password_hash")
+  avatarObjectKey      String?                @map("avatar_object_key")
+  avatarUpdatedAt      DateTime?              @map("avatar_updated_at") @db.Timestamptz(3)
   isLocked             Boolean                @default(false) @map("is_locked")
   securityVersion      Int                    @default(1) @map("security_version")
   createdAt            DateTime               @default(now()) @map("created_at") @db.Timestamptz(3)

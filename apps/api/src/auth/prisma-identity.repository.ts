@@ -23,6 +23,8 @@ function mapUser(user: PrismaIdentityUser): IdentityUser {
     phone: user.phone,
     displayName: user.displayName,
     passwordHash: user.passwordHash,
+    avatarObjectKey: user.avatarObjectKey,
+    avatarUpdatedAt: user.avatarUpdatedAt,
     isLocked: user.isLocked,
     securityVersion: user.securityVersion,
     roles: user.roles.map(({ role }) => role.name as RoleName),
@@ -123,6 +125,32 @@ export class PrismaIdentityRepository implements IdentityRepository {
         include: userWithRoles,
       }),
     );
+  }
+
+  async setAvatar(id: string, objectKey: string | null): Promise<IdentityUser> {
+    return mapUser(
+      await this.prisma.user.update({
+        where: { id },
+        data: {
+          avatarObjectKey: objectKey,
+          avatarUpdatedAt: objectKey ? new Date() : null,
+        },
+        include: userWithRoles,
+      }),
+    );
+  }
+
+  async changePassword(id: string, passwordHash: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id },
+        data: { passwordHash, securityVersion: { increment: 1 } },
+      });
+      await tx.refreshSession.updateMany({
+        where: { userId: id, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+    });
   }
 
   async setLocked(

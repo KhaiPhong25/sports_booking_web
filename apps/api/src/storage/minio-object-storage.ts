@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
   CreateBucketCommand,
+  DeleteObjectCommand,
   GetObjectCommand,
   HeadBucketCommand,
   PutObjectCommand,
@@ -58,6 +59,13 @@ export class MinioObjectStorage implements ObjectStorage {
       data: Buffer.from(await result.Body.transformToByteArray()),
       contentType: result.ContentType ?? "application/octet-stream",
     };
+  }
+
+  async deleteObject(key: string): Promise<void> {
+    await this.ensureBucket();
+    await this.client.send(
+      new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
   }
 
   private ensureBucket(): Promise<void> {

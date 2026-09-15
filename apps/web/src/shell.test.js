@@ -69,6 +69,44 @@ describe("application shell", () => {
     ).toBe("page");
   });
 
+  it("links the signed-in identity to profile and renders its avatar", () => {
+    document.body.innerHTML = renderShell(
+      "<p>Nội dung</p>",
+      {
+        displayName: "Nguyễn An",
+        email: "an@example.com",
+        roles: ["CUSTOMER"],
+        avatarUrl: "/api/v1/users/user-1/avatar?v=1",
+      },
+      "/profile",
+    );
+
+    const account = document.querySelector(
+      'a.account-summary[href="/profile"]',
+    );
+    expect(account?.getAttribute("aria-current")).toBe("page");
+    expect(account?.querySelector("img")?.getAttribute("src")).toBe(
+      "/api/v1/users/user-1/avatar?v=1",
+    );
+    expect(account?.querySelector("img")?.getAttribute("alt")).toBe(
+      "Ảnh đại diện của Nguyễn An",
+    );
+    expect(document.querySelector("[data-account-fallback]")).toBeNull();
+  });
+
+  it("keeps an initials fallback when the account has no avatar", () => {
+    document.body.innerHTML = renderShell("<p>Nội dung</p>", {
+      displayName: "Minh Anh",
+      email: "minh@example.com",
+      roles: ["CUSTOMER"],
+      avatarUrl: null,
+    });
+
+    expect(document.querySelector("[data-account-fallback]")?.textContent).toBe(
+      "M",
+    );
+  });
+
   it("marks only the specific workspace route as current", () => {
     document.body.innerHTML = renderShell(
       "<p>Nội dung</p>",

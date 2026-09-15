@@ -15,6 +15,8 @@ export class InMemoryIdentityRepository implements IdentityRepository {
       id: randomUUID(),
       ...input,
       roles: ["CUSTOMER"],
+      avatarObjectKey: null,
+      avatarUpdatedAt: null,
       isLocked: false,
       securityVersion: 1,
     };
@@ -63,6 +65,24 @@ export class InMemoryIdentityRepository implements IdentityRepository {
     const user = this.requiredUser(id);
     Object.assign(user, input);
     return structuredClone(user);
+  }
+
+  async setAvatar(id: string, objectKey: string | null): Promise<IdentityUser> {
+    const user = this.requiredUser(id);
+    user.avatarObjectKey = objectKey;
+    user.avatarUpdatedAt = objectKey ? new Date() : null;
+    return structuredClone(user);
+  }
+
+  async changePassword(id: string, passwordHash: string): Promise<void> {
+    const user = this.requiredUser(id);
+    user.passwordHash = passwordHash;
+    user.securityVersion += 1;
+    for (const session of this.sessions.values()) {
+      if (session.userId === id && !session.revokedAt) {
+        session.revokedAt = new Date();
+      }
+    }
   }
 
   async setLocked(id: string, locked: boolean): Promise<IdentityUser> {

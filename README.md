@@ -80,9 +80,19 @@ Ba lệnh `dev:*` chạy ở ba terminal riêng. Để khởi động toàn stac
 - Booking transaction ghi đồng thời in-app notification và outbox event. Worker chuyển event sang BullMQ với job ID ổn định, retry email theo exponential backoff và xử lý expiration/completion idempotent.
 - Customer đọc/phân trang notification và chỉ có thể đánh dấu notification của chính mình đã đọc.
 
+### Thông tin cá nhân
+
+Sau khi đăng nhập, mở `http://localhost:5173/profile` hoặc chọn khu vực tài khoản trên thanh điều hướng. Tại đây người dùng có thể:
+
+- sửa tên hiển thị và số điện thoại; email và vai trò chỉ đọc;
+- tải lên, thay thế hoặc xóa ảnh đại diện JPEG/PNG/WebP tối đa 2 MiB;
+- đổi mật khẩu bằng mật khẩu hiện tại; thành công sẽ đăng xuất mọi phiên và yêu cầu đăng nhập lại bằng mật khẩu mới.
+
+Ảnh đại diện được lưu trong MinIO chạy ngay trên máy qua Docker Compose. Luồng local này hoàn toàn self-hosted, không cần tài khoản AWS S3, CDN hoặc bất kỳ dịch vụ cloud trả phí nào. Có thể xem object local tại MinIO console `http://localhost:9001` bằng thông tin đăng nhập trong `.env`.
+
 Email local được gửi tới MailHog, không gửi ra Internet. `OUTBOX_POLL_INTERVAL_MS` điều chỉnh chu kỳ relay; `OUTBOX_REPLAY_AFTER_SECONDS` xác định khi nào event chưa có durable receipt được enqueue lại; `MAIL_FROM` đặt người gửi hiển thị. PostgreSQL vẫn là nguồn dữ liệu bền vững nếu Redis hoặc SMTP tạm thời lỗi. Compose bật Redis AOF/volume và chạy migration service trước API/worker.
 
-UI chính: `/`, `/venues/:id`, `/bookings`, `/bookings/:id`, `/notifications`, `/owner`, `/owner/calendar`, `/owner/bookings`, `/owner/bookings/:id`, `/owner/venues`, `/owner/schedule`, `/admin`, `/admin/users`, `/admin/owner-applications`, `/admin/venues`, `/admin/audit-logs`.
+UI chính: `/`, `/venues/:id`, `/profile`, `/bookings`, `/bookings/:id`, `/notifications`, `/owner`, `/owner/calendar`, `/owner/bookings`, `/owner/bookings/:id`, `/owner/venues`, `/owner/schedule`, `/admin`, `/admin/users`, `/admin/owner-applications`, `/admin/venues`, `/admin/audit-logs`.
 
 Web dùng OpenStreetMap qua một adapter Leaflet. Tile URL, attribution và zoom nằm tại `apps/web/src/config/map.js`, vì vậy có thể đổi nhà cung cấp bản đồ mà không sửa trang venue. Browser E2E dùng API giả lập tại ranh giới HTTP để kiểm tra ổn định hành trình UI; API E2E/integration riêng vẫn kiểm tra PostgreSQL và nghiệp vụ thật.
 

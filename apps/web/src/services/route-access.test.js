@@ -11,6 +11,7 @@ describe("protected web routes", () => {
     "/bookings",
     "/bookings/booking-1",
     "/notifications",
+    "/profile",
   ])("requires a session for %s", (pathname) => {
     expect(requiresSession(pathname)).toBe(true);
   });

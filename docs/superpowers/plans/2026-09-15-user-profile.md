@@ -32,7 +32,7 @@
 - `apps/web/src/services/profile-api.js`: giao tiếp `/me`, đồng bộ session client.
 - `apps/web/src/pages/profile.js`: markup và event handling riêng cho trang profile.
 - `apps/web/src/main.js`, `shell.js`, `services/route-access.js`, `styles/main.css`: route, điều hướng, avatar header và responsive styling.
-- `apps/api/test/profile.e2e-spec.ts`, `apps/web/src/pages/profile.test.js`: HTTP/client behavior chính.
+- `apps/api/test/profile.integration-spec.ts`, `apps/web/src/pages/profile.test.js`: HTTP/client behavior chính.
 - `docs/architecture/api-contract.md`, `docs/learning-notes/user-profile.md`: hợp đồng và tài liệu học tập.
 
 ---
@@ -40,6 +40,7 @@
 ### Task 1: Persistent avatar metadata and safe public user projection
 
 **Files:**
+
 - Create: `apps/api/prisma/migrations/20260915000000_user_profile_avatar/migration.sql`
 - Create: `apps/api/src/auth/public-user.ts`
 - Create: `apps/api/src/auth/public-user.spec.ts`
@@ -54,10 +55,11 @@
 - Test: `apps/api/test/database-schema.integration-spec.ts`
 
 **Interfaces:**
+
 - Consumes: Prisma `User`, existing `IdentityUser`, auth register/login/refresh flows.
 - Produces: `toPublicUser(user): PublicUser`, `IdentityRepository.setAvatar(id, objectKey)`, and avatar fields used by Tasks 2–5.
 
-- [ ] **Step 1: Write failing projection and profile tests**
+- [x] **Step 1: Write failing projection and profile tests**
 
 Add literal expectations proving the response includes a versioned URL but never storage/authentication fields:
 
@@ -86,7 +88,7 @@ it("projects avatar metadata into a cache-busted public URL", () => {
 
 Also test `avatarUrl: null` when either metadata field is absent and update the existing UsersService profile test to assert the same safe projection. Extend `database-schema.integration-spec.ts` with literal expectations that `users.avatar_object_key` and `users.avatar_updated_at` exist and are nullable.
 
-- [ ] **Step 2: Run tests and confirm RED**
+- [x] **Step 2: Run tests and confirm RED**
 
 Run:
 
@@ -104,7 +106,7 @@ TEST_DATABASE_URL=postgresql://sports:sports_local_password@localhost:5432/sport
 
 Expected: FAIL because the two avatar columns have not been migrated yet.
 
-- [ ] **Step 3: Add schema, migration and repository fields**
+- [x] **Step 3: Add schema, migration and repository fields**
 
 Add to `User`:
 
@@ -131,7 +133,7 @@ setAvatar(id: string, objectKey: string | null): Promise<IdentityUser>;
 
 Prisma implementation sets `avatarUpdatedAt` to `new Date()` when `objectKey` is non-null and to `null` when removing it. The in-memory implementation uses the same behavior.
 
-- [ ] **Step 4: Centralize the public projection**
+- [x] **Step 4: Centralize the public projection**
 
 Create:
 
@@ -162,7 +164,7 @@ export function toPublicUser(user: IdentityUser): PublicUser {
 
 Replace duplicated projections in `AuthService` and `UsersService` with `toPublicUser`.
 
-- [ ] **Step 5: Generate Prisma client and verify GREEN**
+- [x] **Step 5: Generate Prisma client and verify GREEN**
 
 Run:
 
@@ -175,7 +177,7 @@ npm run typecheck -w @sports-booking/api
 
 When the PostgreSQL test database is available, deploy the migration against `TEST_DATABASE_URL` and rerun its focused schema test. Expected: all selected tests, schema assertions and API typecheck PASS.
 
-- [ ] **Step 6: Commit Task 1**
+- [x] **Step 6: Commit Task 1**
 
 ```bash
 git add apps/api/prisma/schema.prisma apps/api/prisma/migrations/20260915000000_user_profile_avatar/migration.sql apps/api/src/auth/public-user.ts apps/api/src/auth/public-user.spec.ts apps/api/src/auth/auth.types.ts apps/api/src/auth/identity.repository.ts apps/api/src/auth/prisma-identity.repository.ts apps/api/src/auth/testing/in-memory-identity.repository.ts apps/api/src/auth/auth.service.ts apps/api/src/users/users.service.ts apps/api/src/users/users.service.spec.ts apps/api/test/database-schema.integration-spec.ts
@@ -187,6 +189,7 @@ git commit -m "feat(profile): persist avatar metadata"
 ### Task 2: Validated local avatar storage and HTTP endpoints
 
 **Files:**
+
 - Create: `apps/api/src/storage/user-avatar-policy.ts`
 - Create: `apps/api/src/storage/user-avatar-policy.spec.ts`
 - Create: `apps/api/src/users/user-avatars.controller.ts`
@@ -198,10 +201,11 @@ git commit -m "feat(profile): persist avatar metadata"
 - Modify: `apps/api/test/object-storage.integration-spec.ts`
 
 **Interfaces:**
+
 - Consumes: `IdentityRepository.setAvatar`, `toPublicUser`, `OBJECT_STORAGE`, authenticated `Principal`.
 - Produces: `POST/DELETE /me/avatar`, `GET /users/:id/avatar`, `validateUserAvatar`, and `ObjectStorage.deleteObject`.
 
-- [ ] **Step 1: Write failing avatar policy tests**
+- [x] **Step 1: Write failing avatar policy tests**
 
 Cover a real 1x1 PNG signature, a forged PNG, unsupported GIF and 2 MiB boundary:
 
@@ -217,7 +221,7 @@ it("accepts a PNG only when its signature matches", () => {
 
 Add equivalent signature cases for JPEG (`FF D8 FF`) and WebP (`RIFF....WEBP`), and assert `createUserAvatarKey("user-1")` equals `user-avatars/user-1/avatar`.
 
-- [ ] **Step 2: Run policy test and confirm RED**
+- [x] **Step 2: Run policy test and confirm RED**
 
 Run:
 
@@ -227,7 +231,7 @@ npm test -w @sports-booking/api -- --runTestsByPath src/storage/user-avatar-poli
 
 Expected: FAIL because the policy module does not exist.
 
-- [ ] **Step 3: Implement storage policy and object deletion**
+- [x] **Step 3: Implement storage policy and object deletion**
 
 Export:
 
@@ -253,7 +257,7 @@ export interface ObjectStorage {
 
 Implement MinIO deletion with `DeleteObjectCommand`. Extend the existing integration test to upload, delete and then expect `getObject` to reject.
 
-- [ ] **Step 4: Write failing avatar controller tests**
+- [x] **Step 4: Write failing avatar controller tests**
 
 Build `UserAvatarsController` with a real `UsersService`, in-memory identity repository and a small in-memory object storage. Prove that:
 
@@ -261,14 +265,12 @@ Build `UserAvatarsController` with a real `UsersService`, in-memory identity rep
 expect(uploadedProfile.avatarUrl).toMatch(
   /^\/api\/v1\/users\/[^/]+\/avatar\?v=\d+$/,
 );
-expect([...storage.objects.keys()]).toEqual([
-  `user-avatars/${user.id}/avatar`,
-]);
+expect([...storage.objects.keys()]).toEqual([`user-avatars/${user.id}/avatar`]);
 ```
 
 Also assert invalid signature returns `400`, public read returns exact bytes plus `Content-Type`, delete returns `204`, and upload without bearer token returns `401`.
 
-- [ ] **Step 5: Run controller tests and confirm RED**
+- [x] **Step 5: Run controller tests and confirm RED**
 
 Run:
 
@@ -278,7 +280,7 @@ npm test -w @sports-booking/api -- --runTestsByPath src/users/user-avatars.contr
 
 Expected: FAIL because controller routes are missing.
 
-- [ ] **Step 6: Implement avatar application and HTTP flow**
+- [x] **Step 6: Implement avatar application and HTTP flow**
 
 Add `UsersService.avatarObject(userId)` to return `{ objectKey } | null`, and `UsersService.setAvatar(userId, objectKey)` to return `toPublicUser`. The public GET controller converts `null` to `NotFoundException`; DELETE treats `null` as an idempotent no-op.
 
@@ -302,7 +304,7 @@ async upload(@CurrentUser() user: Principal, @UploadedFile() file: UploadedAvata
 
 For GET, set `Content-Type`, `Cache-Control: public, max-age=86400, immutable` and `X-Content-Type-Options: nosniff`. For DELETE, look up the current key, no-op safely when absent, delete the object when present, clear metadata and return `204`. Import `StorageModule` and register `UserAvatarsController` in `UsersModule`.
 
-- [ ] **Step 7: Verify avatar tests GREEN**
+- [x] **Step 7: Verify avatar tests GREEN**
 
 Run:
 
@@ -313,7 +315,7 @@ npm run typecheck -w @sports-booking/api
 
 Expected: tests and typecheck PASS.
 
-- [ ] **Step 8: Commit Task 2**
+- [x] **Step 8: Commit Task 2**
 
 ```bash
 git add apps/api/src/storage/user-avatar-policy.ts apps/api/src/storage/user-avatar-policy.spec.ts apps/api/src/storage/object-storage.ts apps/api/src/storage/minio-object-storage.ts apps/api/src/users/user-avatars.controller.ts apps/api/src/users/user-avatars.controller.spec.ts apps/api/src/users/users.service.ts apps/api/src/users/users.module.ts apps/api/test/object-storage.integration-spec.ts
@@ -325,6 +327,7 @@ git commit -m "feat(profile): add local avatar management"
 ### Task 3: Secure password change and session revocation
 
 **Files:**
+
 - Create: `apps/api/src/auth/auth-cookie.ts`
 - Create: `apps/api/src/users/dto/change-password.dto.ts`
 - Modify: `apps/api/src/auth/auth.controller.ts`
@@ -338,10 +341,11 @@ git commit -m "feat(profile): add local avatar management"
 - Test: `apps/api/test/auth.e2e-spec.ts`
 
 **Interfaces:**
+
 - Consumes: `PasswordService`, `securityVersion`, refresh sessions and `AccessTokenGuard`.
 - Produces: `AuthService.changePassword`, atomic `IdentityRepository.changePassword`, and `PATCH /me/password`.
 
-- [ ] **Step 1: Write failing service tests**
+- [x] **Step 1: Write failing service tests**
 
 Add tests demonstrating the two security branches:
 
@@ -354,7 +358,7 @@ expect(repository.users.get(user.id)?.securityVersion).toBe(1);
 
 For success, create two sessions, call change password, assert the stored hash verifies only the new value, `securityVersion` is `2`, `activeSessions()` is empty, and `authenticateAccessToken(oldAccessToken)` rejects.
 
-- [ ] **Step 2: Run AuthService test and confirm RED**
+- [x] **Step 2: Run AuthService test and confirm RED**
 
 Run:
 
@@ -364,7 +368,7 @@ npm test -w @sports-booking/api -- --runTestsByPath src/auth/auth.service.spec.t
 
 Expected: FAIL because `changePassword` does not exist.
 
-- [ ] **Step 3: Add atomic repository operation and service policy**
+- [x] **Step 3: Add atomic repository operation and service policy**
 
 Add:
 
@@ -389,11 +393,11 @@ async changePassword(userId: string, currentPassword: string, newPassword: strin
 }
 ```
 
-- [ ] **Step 4: Write failing HTTP password test**
+- [x] **Step 4: Write failing HTTP password test**
 
 In `auth.e2e-spec.ts`, register through an agent, send authenticated `PATCH /api/v1/me/password`, assert `204`, a cleared `sports_refresh` cookie at `/api/v1/auth`, old access token returns `401`, refresh returns `401`, old password login returns `401`, and new password login returns `200`.
 
-- [ ] **Step 5: Run HTTP test and confirm RED**
+- [x] **Step 5: Run HTTP test and confirm RED**
 
 Run:
 
@@ -403,7 +407,7 @@ npm run test:e2e -w @sports-booking/api -- --runTestsByPath test/auth.e2e-spec.t
 
 Expected: FAIL with `404` for `/api/v1/me/password`.
 
-- [ ] **Step 6: Implement DTO, cookie constants and endpoint**
+- [x] **Step 6: Implement DTO, cookie constants and endpoint**
 
 DTO:
 
@@ -428,7 +432,7 @@ export const REFRESH_COOKIE_PATH = "/api/v1/auth";
 
 Add `@Patch("password")`, `@HttpCode(204)` and `@UseGuards(AuthRateLimitGuard)` beneath `@Controller("me")`. Call `AuthService.changePassword`, clear the refresh cookie using the shared path and return nothing. Export `AuthRateLimitGuard` from `AuthModule`.
 
-- [ ] **Step 7: Verify password flow GREEN**
+- [x] **Step 7: Verify password flow GREEN**
 
 Run:
 
@@ -440,7 +444,7 @@ npm run typecheck -w @sports-booking/api
 
 Expected: unit, E2E and typecheck PASS.
 
-- [ ] **Step 8: Commit Task 3**
+- [x] **Step 8: Commit Task 3**
 
 ```bash
 git add apps/api/src/auth/auth-cookie.ts apps/api/src/users/dto/change-password.dto.ts apps/api/src/auth/auth.controller.ts apps/api/src/auth/auth.module.ts apps/api/src/auth/auth.service.ts apps/api/src/auth/auth.service.spec.ts apps/api/src/auth/identity.repository.ts apps/api/src/auth/prisma-identity.repository.ts apps/api/src/auth/testing/in-memory-identity.repository.ts apps/api/src/users/users.controller.ts apps/api/test/auth.e2e-spec.ts
@@ -452,6 +456,7 @@ git commit -m "feat(profile): secure password changes"
 ### Task 4: Profile client, protected route and account navigation
 
 **Files:**
+
 - Create: `apps/web/src/services/profile-api.js`
 - Create: `apps/web/src/services/profile-api.test.js`
 - Modify: `apps/web/src/services/auth-api.js`
@@ -460,13 +465,13 @@ git commit -m "feat(profile): secure password changes"
 - Modify: `apps/web/src/services/route-access.test.js`
 - Modify: `apps/web/src/shell.js`
 - Modify: `apps/web/src/shell.test.js`
-- Modify: `apps/web/src/main.js`
 
 **Interfaces:**
+
 - Consumes: `apiRequest`, `authApi.user()` and server profile endpoints.
 - Produces: `profileApi`, `authApi.replaceUser`, `authApi.clearSession`, protected `/profile`, clickable account summary.
 
-- [ ] **Step 1: Write failing client/session tests**
+- [x] **Step 1: Write failing client/session tests**
 
 Mock `fetch` and assert:
 
@@ -484,7 +489,7 @@ expect(authApi.user().displayName).toBe("Nguyễn An");
 
 Assert upload sends `FormData` without manually adding `Content-Type`, delete clears `avatarUrl`, and successful change password leaves `authApi.token()` and `authApi.user()` as `null`.
 
-- [ ] **Step 2: Run client tests and confirm RED**
+- [x] **Step 2: Run client tests and confirm RED**
 
 Run:
 
@@ -494,7 +499,7 @@ npm test -w @sports-booking/web -- --run src/services/profile-api.test.js src/se
 
 Expected: FAIL because `profile-api.js`, `replaceUser` and `clearSession` are absent.
 
-- [ ] **Step 3: Implement client and session synchronization**
+- [x] **Step 3: Implement client and session synchronization**
 
 Expose these synchronous auth helpers:
 
@@ -516,7 +521,10 @@ export const profileApi = {
   get: async () => authApi.replaceUser(await apiRequest("/me")),
   update: async (payload) =>
     authApi.replaceUser(
-      await apiRequest("/me", { method: "PATCH", body: JSON.stringify(payload) }),
+      await apiRequest("/me", {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      }),
     ),
   uploadAvatar: async (file) => {
     const body = new FormData();
@@ -539,11 +547,11 @@ export const profileApi = {
 };
 ```
 
-- [ ] **Step 4: Write failing navigation tests**
+- [x] **Step 4: Write failing navigation tests**
 
 Assert `requiresSession("/profile")` is true and shell output for an authenticated user contains a single `<a class="account-summary" href="/profile" aria-current="page">`. With `avatarUrl`, assert an `<img alt="Ảnh đại diện của Nguyễn An">`; without it assert initials fallback.
 
-- [ ] **Step 5: Run navigation tests and confirm RED**
+- [x] **Step 5: Run navigation tests and confirm RED**
 
 Run:
 
@@ -553,11 +561,11 @@ npm test -w @sports-booking/web -- --run src/services/route-access.test.js src/s
 
 Expected: FAIL because profile is not protected and account summary is not a link/image.
 
-- [ ] **Step 6: Implement route and shell behavior**
+- [x] **Step 6: Implement route and shell behavior**
 
-Add `/profile` to exact protected paths. Render the authenticated account summary as a route-aware link. Escape both URL and alt text before interpolation. Import `renderProfilePage`/`mountProfilePage` in `main.js`, register `"/profile"`, render it with `authApi.user()`, and mount only on that pathname.
+Add `/profile` to exact protected paths. Render the authenticated account summary as a route-aware link. Escape both URL and alt text before interpolation. Route wiring in `main.js` follows in Task 5 after `profile.js` has been created test-first.
 
-- [ ] **Step 7: Verify client/navigation GREEN**
+- [x] **Step 7: Verify client/navigation GREEN**
 
 Run:
 
@@ -568,10 +576,10 @@ npm run typecheck -w @sports-booking/web
 
 Expected: selected tests and web typecheck PASS.
 
-- [ ] **Step 8: Commit Task 4**
+- [x] **Step 8: Commit Task 4**
 
 ```bash
-git add apps/web/src/services/profile-api.js apps/web/src/services/profile-api.test.js apps/web/src/services/auth-api.js apps/web/src/services/auth-api.test.js apps/web/src/services/route-access.js apps/web/src/services/route-access.test.js apps/web/src/shell.js apps/web/src/shell.test.js apps/web/src/main.js
+git add apps/web/src/services/profile-api.js apps/web/src/services/profile-api.test.js apps/web/src/services/auth-api.js apps/web/src/services/auth-api.test.js apps/web/src/services/route-access.js apps/web/src/services/route-access.test.js apps/web/src/shell.js apps/web/src/shell.test.js docs/superpowers/plans/2026-09-15-user-profile.md
 git commit -m "feat(profile): connect profile route and session"
 ```
 
@@ -580,16 +588,19 @@ git commit -m "feat(profile): connect profile route and session"
 ### Task 5: Responsive Urban Performance profile page
 
 **Files:**
+
 - Create: `apps/web/src/pages/profile.js`
 - Create: `apps/web/src/pages/profile.test.js`
+- Modify: `apps/web/src/main.js`
 - Modify: `apps/web/src/styles/main.css`
 - Test: `apps/web/src/shell.test.js`
 
 **Interfaces:**
+
 - Consumes: `profileApi`, authenticated public user, shared `escapeHtml`, design tokens from `main.css`.
 - Produces: `renderProfilePage(user)`, `mountProfilePage(container)`, avatar preview, profile/password form behavior.
 
-- [ ] **Step 1: Write failing render and validation tests**
+- [x] **Step 1: Write failing render and validation tests**
 
 Test actual DOM behavior:
 
@@ -611,7 +622,7 @@ expect(document.querySelector("[data-avatar-fallback]").textContent).toBe("N");
 
 Add pure validation tests proving mismatched confirmation, a password under 12 characters, a non-image file and a file over 2 MiB are rejected before network calls.
 
-- [ ] **Step 2: Run page tests and confirm RED**
+- [x] **Step 2: Run page tests and confirm RED**
 
 Run:
 
@@ -621,7 +632,7 @@ npm test -w @sports-booking/web -- --run src/pages/profile.test.js
 
 Expected: FAIL because profile rendering/validation functions do not exist.
 
-- [ ] **Step 3: Implement accessible profile markup**
+- [x] **Step 3: Implement accessible profile markup**
 
 Build one `section.profile-page` containing:
 
@@ -633,17 +644,17 @@ Build one `section.profile-page` containing:
 
 Use `escapeHtml` for every server-derived value and use Vietnamese role labels: `CUSTOMER → Khách hàng`, `OWNER → Chủ sân`, `ADMIN → Quản trị viên`.
 
-- [ ] **Step 4: Write failing interaction tests**
+- [x] **Step 4: Write failing interaction tests**
 
 Mock `profileApi` at its public boundary. Assert profile submit sends exactly `{ displayName, phone }`, valid file change creates a preview URL, upload/remove update the rendered avatar, mismatch confirmation does not call `changePassword`, and success redirects to:
 
 ```js
-"/login?reason=password-changed"
+"/login?reason=password-changed";
 ```
 
 Also assert each submit disables only its own action while pending and restores it after failure.
 
-- [ ] **Step 5: Run interaction tests and confirm RED**
+- [x] **Step 5: Run interaction tests and confirm RED**
 
 Run:
 
@@ -653,7 +664,7 @@ npm test -w @sports-booking/web -- --run src/pages/profile.test.js
 
 Expected: render tests may pass, interaction tests FAIL because `mountProfilePage` handlers are absent.
 
-- [ ] **Step 6: Implement page interactions**
+- [x] **Step 6: Implement page interactions**
 
 On mount, fetch the latest profile, render it, then attach one delegated `submit`, `change` and `click` handler to the page. Re-bind only by replacing the profile section through a single `renderAndBind(user)` function. Revoke old object preview URLs before creating new ones. Never send `confirmPassword` to the API.
 
@@ -679,11 +690,11 @@ export function validatePasswordForm(newPassword, confirmPassword) {
 }
 ```
 
-- [ ] **Step 7: Add responsive design-system styles**
+- [x] **Step 7: Add responsive design-system styles**
 
 Add scoped `.profile-*` rules using existing variables only. Desktop uses `grid-template-columns: minmax(16rem, 0.72fr) minmax(0, 1.5fr)`, `gap: clamp(1rem, 3vw, 2rem)`, `var(--radius-lg)` and `var(--shadow-sm)`. At the existing tablet/mobile breakpoint collapse to one column, make actions full width below 36rem, preserve 44px minimum controls, visible focus, sufficient contrast and `prefers-reduced-motion` behavior already established by the stylesheet.
 
-- [ ] **Step 8: Verify page GREEN**
+- [x] **Step 8: Verify page GREEN**
 
 Run:
 
@@ -696,7 +707,7 @@ npm run build -w @sports-booking/web
 
 Expected: tests, lint, typecheck and production web build PASS without warnings introduced by profile code.
 
-- [ ] **Step 9: Commit Task 5**
+- [x] **Step 9: Commit Task 5**
 
 ```bash
 git add apps/web/src/pages/profile.js apps/web/src/pages/profile.test.js apps/web/src/styles/main.css apps/web/src/shell.test.js
@@ -708,16 +719,19 @@ git commit -m "feat(profile): build responsive account experience"
 ### Task 6: Database-backed acceptance tests, documentation and full verification
 
 **Files:**
-- Create: `apps/api/test/profile.e2e-spec.ts`
+
+- Create: `apps/api/test/profile.integration-spec.ts`
 - Create: `docs/learning-notes/user-profile.md`
+- Modify: `apps/api/src/auth/auth.module.ts`
 - Modify: `docs/architecture/api-contract.md`
 - Modify: `README.md`
 
 **Interfaces:**
+
 - Consumes: all APIs and UI contracts from Tasks 1–5, Docker Compose PostgreSQL/MinIO.
 - Produces: regression evidence, updated API contract and Vietnamese learning handoff.
 
-- [ ] **Step 1: Write failing database-backed acceptance tests**
+- [x] **Step 1: Write failing database-backed acceptance tests**
 
 Create a PostgreSQL-backed suite following `phases-2-4.database.e2e-spec.ts` setup. Register a unique user and prove:
 
@@ -731,17 +745,17 @@ expect(changed.status).toBe(204);
 
 Then assert the old access token is `401`, old login is `401`, new login is `200`, profile response never contains `passwordHash`, `securityVersion` or `avatarObjectKey`, and avatar metadata persists after update.
 
-- [ ] **Step 2: Run profile acceptance test and confirm RED**
+- [x] **Step 2: Run profile acceptance test and confirm RED**
 
 Run:
 
 ```bash
-TEST_DATABASE_URL=postgresql://sports:sports_local_password@localhost:5432/sports_booking_test?schema=public npm run test:integration -w @sports-booking/api -- --runTestsByPath test/profile.e2e-spec.ts
+TEST_DATABASE_URL=postgresql://sports:sports_local_password@localhost:5432/sports_booking_test?schema=public npm run test:integration -w @sports-booking/api -- --runTestsByPath test/profile.integration-spec.ts
 ```
 
 Expected: FAIL on at least one unimplemented database-backed acceptance behavior added in Step 1. If every behavior is already covered by the focused unit/HTTP work from Tasks 1–3, record that fact and retain this suite as cross-layer regression coverage rather than manufacturing a false failure.
 
-- [ ] **Step 3: Deploy and validate migration locally**
+- [x] **Step 3: Deploy and validate migration locally**
 
 Run:
 
@@ -753,17 +767,17 @@ npm run db:validate -w @sports-booking/api
 
 Expected: migration deploy and Prisma validation succeed without destructive changes.
 
-- [ ] **Step 4: Run database-backed acceptance suite GREEN**
+- [x] **Step 4: Run database-backed acceptance suite GREEN**
 
 Run:
 
 ```bash
-TEST_DATABASE_URL=postgresql://sports:sports_local_password@localhost:5432/sports_booking_test?schema=public TEST_OBJECT_STORAGE=true npm run test:integration -w @sports-booking/api -- --runTestsByPath test/database-schema.integration-spec.ts test/object-storage.integration-spec.ts test/profile.e2e-spec.ts
+TEST_DATABASE_URL=postgresql://sports:sports_local_password@localhost:5432/sports_booking_test?schema=public TEST_OBJECT_STORAGE=true npm run test:integration -w @sports-booking/api -- --runTestsByPath test/database-schema.integration-spec.ts test/object-storage.integration-spec.ts test/profile.integration-spec.ts
 ```
 
 Expected: profile/database/storage acceptance tests PASS. Delete all test-created MinIO objects through `ObjectStorage.deleteObject` in `afterAll`.
 
-- [ ] **Step 5: Update contract, README and learning note**
+- [x] **Step 5: Update contract, README and learning note**
 
 Document exact endpoints, payloads, status codes, image constraints and forced sign-in behavior. The learning note must explain in Vietnamese:
 
@@ -777,7 +791,7 @@ Document exact endpoints, payloads, status codes, image constraints and forced s
 
 README adds a short “Thông tin cá nhân” demo subsection and explicitly states local MinIO requires no paid cloud account.
 
-- [ ] **Step 6: Run the complete quality gates**
+- [x] **Step 6: Run the complete quality gates**
 
 Run:
 
@@ -798,7 +812,7 @@ TEST_DATABASE_URL=postgresql://sports:sports_local_password@localhost:5432/sport
 
 Expected: all commands PASS. If Docker/MinIO cannot run because of the host environment, record the exact failing command and still run every non-Docker gate; do not claim the skipped smoke test passed.
 
-- [ ] **Step 7: Smoke test the local free stack**
+- [x] **Step 7: Smoke test the local free stack**
 
 Run:
 
@@ -809,14 +823,14 @@ npm run dev:web
 
 Manually verify at `http://localhost:5173/profile`: profile update changes the header, avatar replace/remove survives refresh, wrong current password is rejected, successful change redirects to login, old password fails and new password succeeds. Stop the foreground Vite process after verification; keep Docker volumes intact.
 
-- [ ] **Step 8: Commit Task 6**
+- [x] **Step 8: Commit Task 6**
 
 ```bash
-git add apps/api/test/profile.e2e-spec.ts docs/architecture/api-contract.md docs/learning-notes/user-profile.md README.md
+git add apps/api/src/auth/auth.module.ts apps/api/test/profile.integration-spec.ts docs/architecture/api-contract.md docs/learning-notes/user-profile.md README.md docs/superpowers/plans/2026-09-15-user-profile.md
 git commit -m "test(profile): verify account management flow"
 ```
 
-- [ ] **Step 9: Review final diff without touching user files**
+- [x] **Step 9: Review final diff without touching user files**
 
 Run:
 

@@ -3,6 +3,30 @@ import { InMemoryIdentityRepository } from "../auth/testing/in-memory-identity.r
 import { UsersService } from "./users.service";
 
 describe("UsersService admin controls", () => {
+  it("returns a safe profile with an explicit avatar fallback", async () => {
+    const repository = new InMemoryIdentityRepository();
+    const service = new UsersService(repository);
+    const customer = await repository.createUser({
+      email: "customer@example.com",
+      phone: "+84900000003",
+      displayName: "Khách đặt sân",
+      passwordHash: "secret-customer-hash",
+    });
+
+    const profile = await service.profile(customer.id);
+
+    expect(profile).toEqual({
+      id: customer.id,
+      email: "customer@example.com",
+      phone: "+84900000003",
+      displayName: "Khách đặt sân",
+      roles: ["CUSTOMER"],
+      avatarUrl: null,
+    });
+    expect(profile).not.toHaveProperty("passwordHash");
+    expect(profile).not.toHaveProperty("securityVersion");
+  });
+
   it("filters users without exposing authentication fields", async () => {
     const repository = new InMemoryIdentityRepository();
     const service = new UsersService(repository);

@@ -33,6 +33,13 @@ export const authApi = {
   },
   logout: async () => {
     await request("/auth/logout", { method: "POST" });
+    authApi.clearSession();
+  },
+  replaceUser: (user) => {
+    currentUser = user;
+    return currentUser;
+  },
+  clearSession: () => {
     accessToken = null;
     currentUser = null;
   },

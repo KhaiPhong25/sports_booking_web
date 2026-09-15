@@ -61,6 +61,7 @@ import {
   mountAdminAuditLogs,
   renderAdminAuditLogs,
 } from "./pages/admin-audit.js";
+import { mountProfilePage, renderProfilePage } from "./pages/profile.js";
 import { requiresSession } from "./services/route-access.js";
 
 const app = document.querySelector("#app");
@@ -84,6 +85,7 @@ const routes = {
   "/bookings": renderCustomerBookings,
   "/notifications": renderNotifications,
   "/owner/bookings": renderOwnerBookings,
+  "/profile": () => renderProfilePage(authApi.user()),
 };
 async function initialize() {
   const sessionRequired = requiresSession(window.location.pathname);
@@ -133,6 +135,7 @@ async function initialize() {
   if (window.location.pathname === "/bookings") mountCustomerBookings(app);
   if (window.location.pathname === "/notifications") mountNotifications(app);
   if (window.location.pathname === "/owner/bookings") mountOwnerBookings(app);
+  if (window.location.pathname === "/profile") void mountProfilePage(app);
   if (venueDetailMatch) mountPublicVenueDetail(app, venueDetailMatch[1]);
   if (ownerBookingDetailMatch) {
     mountOwnerBookingDetail(app, ownerBookingDetailMatch[1]);

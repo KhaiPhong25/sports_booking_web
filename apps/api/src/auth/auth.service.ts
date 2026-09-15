@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -9,6 +10,7 @@ import { IDENTITY_REPOSITORY, IdentityRepository } from "./identity.repository";
 import { IdentityUser, Principal, SessionTokens } from "./auth.types";
 import { normalizeVietnamesePhone } from "./phone";
 import { PasswordService } from "./password.service";
+import { PublicUser, toPublicUser } from "./public-user";
 import { RefreshClaims, TokenService } from "./token.service";
 
 export interface RegisterInput {
@@ -24,17 +26,7 @@ export interface LoginInput {
 }
 
 export interface AuthResult extends SessionTokens {
-  user: ReturnType<typeof publicUser>;
-}
-
-function publicUser(user: IdentityUser) {
-  return {
-    id: user.id,
-    email: user.email,
-    phone: user.phone,
-    displayName: user.displayName,
-    roles: user.roles,
-  };
+  user: PublicUser;
 }
 
 @Injectable()
@@ -71,7 +63,7 @@ export class AuthService {
       throw error;
     }
     const session = await this.createSession(user, null);
-    return { ...session, user: publicUser(user) };
+    return { ...session, user: toPublicUser(user) };
   }
 
   async login(
@@ -90,7 +82,7 @@ export class AuthService {
     }
     return {
       ...(await this.createSession(user, userAgent)),
-      user: publicUser(user),
+      user: toPublicUser(user),
     };
   }
 
@@ -142,7 +134,7 @@ export class AuthService {
       await this.repository.revokeFamily(claims.fid);
       throw new UnauthorizedException("Refresh token was already rotated");
     }
-    return { ...next, user: publicUser(user) };
+    return { ...next, user: toPublicUser(user) };
   }
 
   async logout(refreshToken: string): Promise<void> {
@@ -152,6 +144,30 @@ export class AuthService {
     } catch {
       return;
     }
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    const user = await this.repository.findUserById(userId);
+    if (
+      !user ||
+      user.isLocked ||
+      !(await this.passwords.verify(user.passwordHash, currentPassword))
+    ) {
+      throw new UnauthorizedException("Current password is incorrect");
+    }
+    if (await this.passwords.verify(user.passwordHash, newPassword)) {
+      throw new BadRequestException(
+        "New password must be different from current password",
+      );
+    }
+    await this.repository.changePassword(
+      user.id,
+      await this.passwords.hash(newPassword),
+    );
   }
 
   async authenticateAccessToken(accessToken: string): Promise<Principal> {
