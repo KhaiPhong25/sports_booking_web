@@ -1,19 +1,27 @@
 import { authApi } from "../services/auth-api.js";
+import {
+  canAccessRoute,
+  workspaceHome,
+} from "../services/route-access.js";
 
-export function loginReturnPath(search = window.location.search) {
+export function loginReturnPath(
+  search = window.location.search,
+  roles = [],
+) {
+  const fallback = workspaceHome(roles) ?? "/";
   const returnTo = new window.URLSearchParams(search).get("returnTo");
-  if (!returnTo?.startsWith("/")) return "/";
+  if (!returnTo?.startsWith("/")) return fallback;
   try {
     const origin =
       window.location.origin === "null"
         ? "http://localhost"
         : window.location.origin;
     const target = new window.URL(returnTo, origin);
-    return target.origin === origin
+    return target.origin === origin && canAccessRoute(target.pathname, roles)
       ? `${target.pathname}${target.search}${target.hash}`
-      : "/";
+      : fallback;
   } catch {
-    return "/";
+    return fallback;
   }
 }
 
@@ -25,7 +33,7 @@ function page(title, fields, action, notice = "") {
   const login = action === "login";
   return `<section class="auth-layout" aria-labelledby="auth-title">
     <div class="auth-story">
-      <a class="auth-brand" href="/">ĐẶT<span>SÂN</span></a>
+      <a class="auth-brand" href="/">SPORTS <span>CENTER</span></a>
       <div><p class="eyebrow">Urban Performance</p><h2>${login ? "Trở lại đường pitch của bạn." : "Một tài khoản. Mọi cuộc chơi."}</h2><p>Tìm đúng sân, theo dõi booking và nhận cập nhật — tất cả trong một trải nghiệm rõ ràng.</p></div>
       <ul class="auth-benefits"><li>Lịch trống theo thời gian thực</li><li>Giá được xác nhận trước khi đặt</li><li>Thông báo xuyên suốt hành trình</li></ul>
     </div>
@@ -98,10 +106,15 @@ export function mountAuthPage(container) {
     status.textContent = "Đang xử lý…";
     try {
       const payload = Object.fromEntries(new FormData(form));
-      await authApi[form.dataset.authForm](payload);
+      const result = await authApi[form.dataset.authForm](payload);
       status.textContent = "Thành công. Đang chuyển trang…";
       window.location.assign(
-        form.dataset.authForm === "login" ? loginReturnPath() : "/",
+        form.dataset.authForm === "login"
+          ? loginReturnPath(
+              window.location.search,
+              result?.user?.roles ?? authApi.user()?.roles ?? [],
+            )
+          : "/",
       );
     } catch (error) {
       status.textContent =

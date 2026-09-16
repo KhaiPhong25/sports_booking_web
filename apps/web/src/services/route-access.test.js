@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   canAccessRoute,
   effectiveRole,
+  redirectForRoute,
   requiresSession,
   workspaceHome,
 } from "./route-access.js";
@@ -75,4 +76,37 @@ describe("role workspace policy", () => {
   ])("denies %s for roles %j", (pathname, roles) => {
     expect(canAccessRoute(pathname, roles)).toBe(false);
   });
+
+  it("sends anonymous protected routes to login with the complete return path", () => {
+    expect(redirectForRoute("/admin", "?page=2", null)).toBe(
+      "/login?returnTo=%2Fadmin%3Fpage%3D2",
+    );
+  });
+
+  it("allows a session to remain inside its effective workspace", () => {
+    expect(
+      redirectForRoute("/admin/users", "", {
+        roles: ["CUSTOMER", "ADMIN"],
+      }),
+    ).toBeNull();
+  });
+
+  it("rejects an authenticated session without a supported role", () => {
+    expect(redirectForRoute("/", "", { roles: [] })).toBe(
+      "/login?reason=invalid-role",
+    );
+  });
+
+  it.each([
+    ["/bookings", ["CUSTOMER", "ADMIN"], "/admin"],
+    ["/admin", ["CUSTOMER", "OWNER"], "/owner"],
+    ["/owner", ["CUSTOMER"], "/"],
+  ])(
+    "redirects %s for roles %j to %s",
+    (pathname, roles, expectedDestination) => {
+      expect(redirectForRoute(pathname, "", { roles })).toBe(
+        expectedDestination,
+      );
+    },
+  );
 });

@@ -160,6 +160,15 @@ test("owner vận hành booking, inventory, lịch và giá trong một hành tr
   ).toBeVisible();
   await expect(page.locator(".workspace-hero--owner")).toBeVisible();
   await expect(page.getByText("Booking chờ duyệt")).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Điều hướng chủ sân" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Điều hướng chính" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("navigation", { name: "Điều hướng quản trị" }),
+  ).toHaveCount(0);
 
   await page.getByRole("link", { name: "Lịch booking" }).first().click();
   await expect(
@@ -218,6 +227,19 @@ test("owner vận hành booking, inventory, lịch và giá trong một hành tr
       "hours:update",
     ]),
   );
+});
+
+test("owner được chuyển khỏi route của role khác", async ({ page }) => {
+  await mockOwnerApi(page);
+
+  await page.goto("/admin");
+  await expect(page).toHaveURL("/owner");
+  await expect(
+    page.getByRole("heading", { name: "Giữ mọi sân đúng nhịp." }),
+  ).toBeVisible();
+
+  await page.goto("/bookings");
+  await expect(page).toHaveURL("/owner");
 });
 
 test("owner calendar và biểu mẫu quản lý dùng được trên mobile", async ({

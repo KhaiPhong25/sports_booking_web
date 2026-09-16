@@ -29,6 +29,15 @@ const booking = {
   priceAmount: 180000,
 };
 
+const customerUser = {
+  id: "customer-1",
+  displayName: "Nguyễn An",
+  email: "customer@example.com",
+  phone: "0901234567",
+  roles: ["CUSTOMER"],
+  avatarUrl: null,
+};
+
 async function mockCustomerApi(page) {
   let loggedIn = false;
   let bookingStatus = "CONFIRMED";
@@ -66,15 +75,22 @@ async function mockCustomerApi(page) {
     }
     if (path === "/auth/refresh" && method === "POST") {
       return loggedIn
-        ? json({ accessToken: "customer-token" })
+        ? json({ accessToken: "customer-token", user: customerUser })
         : json({ message: "Bạn cần đăng nhập" }, 401);
     }
     if (path === "/auth/login" && method === "POST") {
       loggedIn = true;
       return json({
         accessToken: "customer-token",
-        user: { id: "customer-1", roles: ["CUSTOMER"] },
+        user: customerUser,
       });
+    }
+    if (path === "/auth/logout" && method === "POST") {
+      loggedIn = false;
+      return route.fulfill({ status: 204 });
+    }
+    if (path === "/me" && method === "GET") {
+      return json(customerUser);
     }
     if (path === "/bookings" && method === "POST") {
       bookingCreates += 1;
@@ -133,6 +149,10 @@ test("khách xem lịch, đăng nhập rồi đặt và quản lý booking", asy
   const api = await mockCustomerApi(page);
   await page.goto("/");
 
+  await expect(page).toHaveTitle("Sports Center — Chơi đúng nhịp");
+  await expect(
+    page.getByRole("link", { name: "Sports Center - Trang chủ" }),
+  ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: /Sân phù hợp.*Giờ chơi của bạn/ }),
   ).toBeVisible();
@@ -243,4 +263,77 @@ test("giao diện mobile có skip link và điều khiển truy cập bằng bà
         ),
       ),
   ).toBeLessThanOrEqual(0.001);
+});
+
+test("menu tài khoản mở hồ sơ và đăng xuất khỏi phiên hiện tại", async ({
+  page,
+}) => {
+  await mockCustomerApi(page);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/login");
+  await page.getByLabel("Email").fill("customer@example.com");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("safe-password-123");
+  await page.getByRole("button", { name: "Đăng nhập" }).click();
+  await expect(page).toHaveURL("/");
+
+  const accountTrigger = page.getByRole("button", {
+    name: "Mở menu tài khoản của Nguyễn An",
+  });
+  await accountTrigger.click();
+  const accountPopover = page.locator(".account-menu__popover");
+  await expect(accountPopover).toBeVisible();
+  expect(
+    await accountPopover.evaluate(
+      (element) => globalThis.getComputedStyle(element).position,
+    ),
+  ).toBe("absolute");
+  await expect(
+    accountPopover.getByRole("link", { name: "Thông tin cá nhân" }),
+  ).toHaveCSS("justify-content", "flex-start");
+  await expect(
+    accountPopover.getByRole("button", { name: "Đăng xuất" }),
+  ).toHaveCSS("justify-content", "flex-start");
+  const popoverBox = await accountPopover.boundingBox();
+  expect(popoverBox.x).toBeGreaterThanOrEqual(0);
+  expect(popoverBox.x + popoverBox.width).toBeLessThanOrEqual(375);
+  await page.getByRole("link", { name: "Thông tin cá nhân" }).click();
+  await expect(page).toHaveURL("/profile");
+  await expect(
+    page.getByRole("heading", { name: "Thông tin cá nhân" }),
+  ).toBeVisible();
+
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Mở menu tài khoản của Nguyễn An" })
+    .click();
+  await page.getByRole("button", { name: "Đăng xuất" }).click();
+  await expect(page).toHaveURL("/");
+  await expect(page.getByRole("link", { name: "Đăng ký" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Mở menu tài khoản của Nguyễn An" }),
+  ).toHaveCount(0);
+});
+
+test("customer chỉ truy cập workspace customer", async ({ page }) => {
+  await mockCustomerApi(page);
+  await page.goto("/login");
+  await page.getByLabel("Email").fill("customer@example.com");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("safe-password-123");
+  await page.getByRole("button", { name: "Đăng nhập" }).click();
+
+  await expect(page).toHaveURL("/");
+  await expect(
+    page.getByRole("navigation", { name: "Điều hướng chính" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Điều hướng chủ sân" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("navigation", { name: "Điều hướng quản trị" }),
+  ).toHaveCount(0);
+
+  await page.goto("/admin");
+  await expect(page).toHaveURL("/");
+  await page.goto("/owner");
+  await expect(page).toHaveURL("/");
 });

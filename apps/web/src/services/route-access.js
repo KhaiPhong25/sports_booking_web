@@ -45,6 +45,20 @@ export function canAccessRoute(pathname, roles = []) {
   return false;
 }
 
+export function redirectForRoute(pathname, search = "", user = null) {
+  if (!user) {
+    const returnTo = `${pathname}${search}`;
+    return requiresSession(pathname)
+      ? `/login?returnTo=${encodeURIComponent(returnTo)}`
+      : null;
+  }
+
+  const roles = user.roles ?? [];
+  const home = workspaceHome(roles);
+  if (!home) return "/login?reason=invalid-role";
+  return canAccessRoute(pathname, roles) ? null : home;
+}
+
 export function requiresSession(pathname) {
   return (
     exactProtectedPaths.has(pathname) ||

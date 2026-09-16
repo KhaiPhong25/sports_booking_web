@@ -1,6 +1,6 @@
 import "./styles/main.css";
 import "leaflet/dist/leaflet.css";
-import { renderShell } from "./shell.js";
+import { mountShell, renderShell } from "./shell.js";
 import {
   mountAuthPage,
   renderLoginPage,
@@ -62,7 +62,10 @@ import {
   renderAdminAuditLogs,
 } from "./pages/admin-audit.js";
 import { mountProfilePage, renderProfilePage } from "./pages/profile.js";
-import { requiresSession } from "./services/route-access.js";
+import {
+  redirectForRoute,
+  workspaceHome,
+} from "./services/route-access.js";
 
 const app = document.querySelector("#app");
 if (!app) {
@@ -88,15 +91,23 @@ const routes = {
   "/profile": () => renderProfilePage(authApi.user()),
 };
 async function initialize() {
-  const sessionRequired = requiresSession(window.location.pathname);
   try {
     await authApi.ensureSession();
   } catch {
-    if (sessionRequired) {
-      const returnTo = `${window.location.pathname}${window.location.search}`;
-      window.location.assign(`/login?returnTo=${encodeURIComponent(returnTo)}`);
-      return;
+    authApi.clearSession();
+  }
+  const user = authApi.user();
+  const redirect = redirectForRoute(
+    window.location.pathname,
+    window.location.search,
+    user,
+  );
+  if (redirect) {
+    if (user && !workspaceHome(user.roles ?? [])) {
+      await authApi.logout().catch(() => authApi.clearSession());
     }
+    window.location.assign(redirect);
+    return;
   }
   const renderPage = routes[window.location.pathname];
   const venueDetailMatch =
@@ -116,6 +127,7 @@ async function initialize() {
         authApi.user(),
         window.location.pathname,
       );
+  mountShell(app);
   if (renderPage) mountAuthPage(app);
   if (window.location.pathname === "/owner/apply") mountOwnerApplication(app);
   if (window.location.pathname === "/admin/owner-applications") {

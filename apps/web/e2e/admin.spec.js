@@ -144,6 +144,15 @@ test("admin quản lý user, hồ sơ owner, venue và xem audit", async ({
     page.getByRole("heading", { name: "Tổng quan hệ thống" }),
   ).toBeVisible();
   await expect(page.locator(".workspace-hero--admin")).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Điều hướng quản trị" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Điều hướng chính" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("navigation", { name: "Điều hướng chủ sân" }),
+  ).toHaveCount(0);
 
   await page.getByRole("link", { name: "Quản lý người dùng" }).click();
   await expect(page.locator(".data-row")).toBeVisible();
@@ -200,6 +209,19 @@ test("admin quản lý user, hồ sơ owner, venue và xem audit", async ({
       .filter({ has: page.getByRole("heading", { name: "USER_LOCKED" }) })
       .getByText("Quản trị viên"),
   ).toBeVisible();
+});
+
+test("admin được chuyển khỏi route của role khác", async ({ page }) => {
+  await mockAdminApi(page);
+
+  await page.goto("/bookings");
+  await expect(page).toHaveURL("/admin");
+  await expect(
+    page.getByRole("heading", { name: "Tổng quan hệ thống" }),
+  ).toBeVisible();
+
+  await page.goto("/owner");
+  await expect(page).toHaveURL("/admin");
 });
 
 test("admin navigation và filters dùng được trên mobile", async ({ page }) => {

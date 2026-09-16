@@ -7,6 +7,14 @@ import {
 } from "./auth.js";
 
 describe("authentication pages", () => {
+  it("shows the Sports Center brand on authentication pages", () => {
+    document.body.innerHTML = renderLoginPage();
+
+    expect(document.querySelector('a.auth-brand[href="/"]')?.textContent).toBe(
+      "SPORTS CENTER",
+    );
+  });
+
   it("renders a labelled registration form with a live status region", () => {
     document.body.innerHTML = renderRegisterPage();
     expect(
@@ -46,5 +54,22 @@ describe("authentication pages", () => {
     expect(loginReturnPath("?returnTo=https%3A%2F%2Fevil.example")).toBe("/");
     expect(loginReturnPath("?returnTo=%2F%2Fevil.example")).toBe("/");
     expect(loginReturnPath("?returnTo=%2F%5Cevil.example")).toBe("/");
+  });
+
+  it.each([
+    [["CUSTOMER", "ADMIN"], "/admin"],
+    [["CUSTOMER", "OWNER"], "/owner"],
+    [["CUSTOMER"], "/"],
+  ])("uses the workspace home for roles %j", (roles, expected) => {
+    expect(loginReturnPath("", roles)).toBe(expected);
+  });
+
+  it("keeps an allowed return path and rejects a route from another role", () => {
+    expect(
+      loginReturnPath("?returnTo=%2Fprofile", ["CUSTOMER", "ADMIN"]),
+    ).toBe("/profile");
+    expect(
+      loginReturnPath("?returnTo=%2Fadmin%2Fusers", ["CUSTOMER", "OWNER"]),
+    ).toBe("/owner");
   });
 });
