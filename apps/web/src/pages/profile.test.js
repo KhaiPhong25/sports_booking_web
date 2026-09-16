@@ -31,7 +31,7 @@ async function flushEvents() {
 }
 
 async function mountSubject(overrides = {}) {
-  document.body.innerHTML = `<header><a class="account-summary" href="/profile"><span class="account-avatar" data-account-fallback>M</span><span><strong>Minh Anh</strong><small>old@example.com</small></span></a></header><main>${renderProfilePage(profile)}</main>`;
+  document.body.innerHTML = `<header><button class="account-summary" type="button" aria-label="Mở menu tài khoản của Minh Anh"><span class="account-avatar" data-account-fallback>M</span><span><strong>Minh Anh</strong><small>old@example.com</small></span></button></header><main>${renderProfilePage(profile)}</main>`;
   const api = {
     get: vi.fn().mockResolvedValue(profile),
     update: vi.fn().mockResolvedValue(profile),
@@ -141,6 +141,9 @@ describe("profile page", () => {
     expect(document.querySelector(".account-summary strong")?.textContent).toBe(
       "Nguyễn Minh An",
     );
+    expect(
+      document.querySelector(".account-summary")?.getAttribute("aria-label"),
+    ).toBe("Mở menu tài khoản của Nguyễn Minh An");
     expect(document.querySelector("[data-profile-status]")?.textContent).toBe(
       "Thông tin cá nhân đã được cập nhật.",
     );

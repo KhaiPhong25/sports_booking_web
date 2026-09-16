@@ -153,6 +153,7 @@ function syncAccountSummary(container, user) {
   const name = user.displayName ?? "Tài khoản";
   const strong = account.querySelector("strong");
   const small = account.querySelector("small");
+  account.setAttribute("aria-label", `Mở menu tài khoản của ${name}`);
   if (strong) strong.textContent = name;
   if (small) small.textContent = user.email ?? "";
 
