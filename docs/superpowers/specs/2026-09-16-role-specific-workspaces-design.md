@@ -30,23 +30,23 @@ Một tài khoản có thể giữ nhiều role trong dữ liệu. Frontend ch�
 3. `CUSTOMER`
 
 | Roles trong session | Role hiệu lực | Trang mặc định |
-|---|---|---|
-| `CUSTOMER, ADMIN` | `ADMIN` | `/admin` |
-| `CUSTOMER, OWNER` | `OWNER` | `/owner` |
-| `CUSTOMER` | `CUSTOMER` | `/` |
+| ------------------- | ------------- | -------------- |
+| `CUSTOMER, ADMIN`   | `ADMIN`       | `/admin`       |
+| `CUSTOMER, OWNER`   | `OWNER`       | `/owner`       |
+| `CUSTOMER`          | `CUSTOMER`    | `/`            |
 
 Không thêm role switcher trong thay đổi này. Đây là lựa chọn có chủ đích để mỗi phiên chỉ có một ngữ cảnh làm việc rõ ràng, đúng yêu cầu “không thừa, không thiếu”.
 
 ## 4. Ma trận route phía frontend
 
-| Nhóm route | Anonymous | Customer | Owner | Admin |
-|---|---:|---:|---:|---:|
-| `/`, `/venues/:id` | Cho phép | Cho phép | Chuyển về `/owner` | Chuyển về `/admin` |
-| `/login`, `/register` | Cho phép | Chuyển về `/` | Chuyển về `/owner` | Chuyển về `/admin` |
-| `/bookings`, `/bookings/:id`, `/notifications`, `/owner/apply` | Yêu cầu đăng nhập | Cho phép | Chuyển về `/owner` | Chuyển về `/admin` |
-| `/owner`, `/owner/*` trừ `/owner/apply` | Yêu cầu đăng nhập | Chuyển về `/` | Cho phép | Chuyển về `/admin` |
-| `/admin`, `/admin/*` | Yêu cầu đăng nhập | Chuyển về `/` | Chuyển về `/owner` | Cho phép |
-| `/profile` | Yêu cầu đăng nhập | Cho phép | Cho phép | Cho phép |
+| Nhóm route                                                     |         Anonymous |      Customer |              Owner |              Admin |
+| -------------------------------------------------------------- | ----------------: | ------------: | -----------------: | -----------------: |
+| `/`, `/venues/:id`                                             |          Cho phép |      Cho phép | Chuyển về `/owner` | Chuyển về `/admin` |
+| `/login`, `/register`                                          |          Cho phép | Chuyển về `/` | Chuyển về `/owner` | Chuyển về `/admin` |
+| `/bookings`, `/bookings/:id`, `/notifications`, `/owner/apply` | Yêu cầu đăng nhập |      Cho phép | Chuyển về `/owner` | Chuyển về `/admin` |
+| `/owner`, `/owner/*` trừ `/owner/apply`                        | Yêu cầu đăng nhập | Chuyển về `/` |           Cho phép | Chuyển về `/admin` |
+| `/admin`, `/admin/*`                                           | Yêu cầu đăng nhập | Chuyển về `/` | Chuyển về `/owner` |           Cho phép |
+| `/profile`                                                     | Yêu cầu đăng nhập |      Cho phép |           Cho phép |           Cho phép |
 
 Khi người dùng chưa đăng nhập mở route protected, hệ thống giữ hành vi chuyển tới `/login?returnTo=...`. Sau khi đăng nhập, `returnTo` chỉ được dùng nếu role hiệu lực được phép truy cập route đó; nếu không, hệ thống dùng dashboard mặc định. Điều này vừa tránh open redirect vừa tránh đưa tài khoản vào workspace sai role.
 
