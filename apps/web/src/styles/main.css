@@ -324,23 +324,37 @@ label {
   overflow-x: auto;
 }
 
+.account-menu {
+  position: relative;
+  justify-self: end;
+}
+
 .account-summary {
   display: flex;
   align-items: center;
   gap: 0.65rem;
   min-width: 0;
+  padding: 0.3rem 0.45rem;
   color: #fff;
+  background: transparent;
+  border-color: transparent;
   border-radius: var(--radius-sm);
+  box-shadow: none;
+  cursor: pointer;
   text-decoration: none;
 }
 
 .account-summary:hover,
-.account-summary[aria-current="page"] {
+.account-summary:focus-visible,
+.account-summary[aria-expanded="true"] {
   color: #fff;
+  background: rgb(255 255 255 / 9%);
+  border-color: rgb(255 255 255 / 12%);
 }
 
-.account-summary > span:last-child {
+.account-summary__identity {
   display: grid;
+  text-align: left;
 }
 
 .account-summary strong,
@@ -369,6 +383,97 @@ label {
 
 img.account-avatar {
   object-fit: cover;
+}
+
+.account-summary::after {
+  width: 0.45rem;
+  height: 0.45rem;
+  margin: 0 0.15rem 0.25rem 0;
+  border-right: 2px solid #aab8be;
+  border-bottom: 2px solid #aab8be;
+  content: "";
+  transform: rotate(45deg);
+  transition: transform var(--transition);
+}
+
+.account-summary[aria-expanded="true"]::after {
+  margin-bottom: -0.1rem;
+  transform: rotate(225deg);
+}
+
+.account-menu__popover {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.7rem);
+  right: 0;
+  display: grid;
+  width: min(17rem, calc(100vw - 1.5rem));
+  padding: 0.55rem;
+  gap: 0.2rem;
+  color: var(--ink);
+  background: rgb(255 255 255 / 98%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.account-menu__popover[hidden] {
+  display: none;
+}
+
+.account-menu__popover a,
+.account-menu__popover button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.7rem 0.8rem;
+  gap: 0.7rem;
+  color: var(--primary-800);
+  background: transparent;
+  border: 0;
+  border-radius: 0.65rem;
+  box-shadow: none;
+  font-weight: 750;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.account-menu__popover a:hover,
+.account-menu__popover a:focus-visible,
+.account-menu__popover a[aria-current="page"],
+.account-menu__popover button:hover,
+.account-menu__popover button:focus-visible {
+  color: var(--primary-950);
+  background: var(--surface-soft);
+}
+
+.account-menu__popover [data-account-logout] {
+  color: var(--danger);
+}
+
+.account-menu__popover button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.account-menu__icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: 0 0 auto;
+}
+
+.account-menu__status {
+  margin: 0;
+  padding: 0 0.8rem;
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+.account-menu__status:empty {
+  display: none;
 }
 
 .visually-hidden {
@@ -2417,7 +2522,7 @@ details.resource-subsection[open] > summary {
     overflow-x: auto;
   }
 
-  .account-summary,
+  .account-menu,
   .account-actions {
     justify-self: end;
   }
