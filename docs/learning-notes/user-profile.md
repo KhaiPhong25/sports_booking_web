@@ -11,6 +11,7 @@ Tính năng này bổ sung trang `/profile` theo cùng design system của publi
 - `POST /me/avatar`, `DELETE /me/avatar` và public `GET /users/:userId/avatar` quản lý ảnh JPEG/PNG/WebP tối đa 2 MiB.
 - `PATCH /me/password` xác minh mật khẩu hiện tại, thay hash, tăng `securityVersion`, revoke toàn bộ refresh session và xóa refresh cookie.
 - Trang `/profile` responsive có preview ảnh, fallback initials, validation phía client, trạng thái loading/error/success và đồng bộ header ngay sau khi lưu.
+- Avatar trên header mở menu tài khoản responsive: “Thông tin cá nhân” dẫn tới `/profile`, còn “Đăng xuất” revoke phiên qua API rồi đưa người dùng về trang chủ public.
 - Acceptance test đi xuyên HTTP, Prisma, PostgreSQL và MinIO thật để kiểm tra dữ liệu bền vững và session cũ bị vô hiệu.
 
 ## Vì sao metadata nằm ở PostgreSQL còn binary nằm ở MinIO?
@@ -50,6 +51,14 @@ Chỉ kiểm tra extension hoặc MIME do browser gửi là không đủ: attack
 4. Endpoint xóa refresh cookie; frontend xóa access token/user local và chuyển tới trang đăng nhập.
 5. Mỗi access token chứa security version tại lúc phát hành. Guard luôn so version trong token với user hiện tại, nên token cũ bị `401` ngay sau transaction dù chữ ký JWT vẫn còn hạn.
 
+### Menu tài khoản và đăng xuất
+
+1. Header chỉ render nút avatar/menu khi refresh hoặc login trả về user hiện hành.
+2. Nút dùng `aria-expanded` và `aria-controls`; menu đóng khi bấm lại, bấm ra ngoài hoặc nhấn `Escape`.
+3. “Thông tin cá nhân” dùng route `/profile` hiện có, không tạo thêm form hay API trùng lặp.
+4. “Đăng xuất” gọi `POST /auth/logout`, chờ server revoke refresh session rồi mới xóa session memory và điều hướng về `/`.
+5. Nếu request thất bại, menu giữ nguyên, bật lại nút và thông báo lỗi để người dùng có thể thử lại.
+
 ## Các file quan trọng
 
 - `apps/api/src/auth/public-user.ts`: projection allowlist duy nhất cho user công khai.
@@ -60,8 +69,10 @@ Chỉ kiểm tra extension hoặc MIME do browser gửi là không đủ: attack
 - `apps/api/src/users/users.controller.ts`: `/me` và đổi mật khẩu.
 - `apps/web/src/services/profile-api.js`: HTTP client và đồng bộ session.
 - `apps/web/src/pages/profile.js`: markup, validation, preview và interactions.
+- `apps/web/src/shell.js`: account dropdown, accessibility, logout và điều hướng hồ sơ.
 - `apps/api/test/profile.integration-spec.ts`: acceptance test với PostgreSQL/MinIO thật.
 - `apps/web/src/pages/profile.test.js`: behavior test của trang profile.
+- `apps/web/src/shell.test.js` và `apps/web/e2e/customer.spec.js`: unit/E2E cho dropdown và logout.
 
 ## Cách chạy và kiểm thử
 
@@ -77,6 +88,8 @@ Chạy các test tập trung:
 ```bash
 npm test -w @sports-booking/api -- --runTestsByPath src/auth/public-user.spec.ts src/storage/user-avatar-policy.spec.ts src/users/user-avatars.controller.spec.ts src/auth/auth.service.spec.ts
 npm test -w @sports-booking/web -- src/pages/profile.test.js
+npm test -w @sports-booking/web -- src/shell.test.js
+npm run test:e2e -w @sports-booking/web -- --grep "menu tài khoản"
 TEST_DATABASE_URL=postgresql://sports:sports_local_password@localhost:5432/sports_booking_test?schema=public TEST_OBJECT_STORAGE=true npm run test:integration -w @sports-booking/api -- --runTestsByPath test/profile.integration-spec.ts
 ```
 
@@ -92,6 +105,7 @@ Chạy web/API trên host theo `docs/guides/local-development.md`, đăng nhập
 - Không log password, hash, JWT, cookie hoặc byte ảnh trong error/test output.
 - Xóa/chỉnh object trực tiếp trong MinIO có thể làm metadata PostgreSQL bị lệch. Mọi thay đổi avatar nên đi qua API.
 - MinIO local dùng tài nguyên máy và hoàn toàn miễn phí; AWS S3 thật có mô hình tính phí riêng và không được dùng trong luồng học tập này.
+- Không nên chỉ xóa user phía frontend khi logout: phải chờ API revoke refresh session thành công; nếu lỗi thì giữ trạng thái đăng nhập và cho phép retry.
 
 ## Câu hỏi tự kiểm tra
 
@@ -102,3 +116,4 @@ Chạy web/API trên host theo `docs/guides/local-development.md`, đăng nhập
 5. Vì sao public profile response nên được dựng bằng allowlist?
 6. Nếu object đã ghi vào MinIO nhưng transaction metadata thất bại, hệ thống cần chiến lược cleanup nào?
 7. Vì sao avatar URL có query version thay vì URL cố định hoàn toàn?
+8. Vì sao frontend chỉ xóa session sau khi endpoint logout trả về thành công?

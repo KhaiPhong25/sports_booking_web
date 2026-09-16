@@ -6,7 +6,7 @@ const runMailHogTests =
 
 interface MailHogMessage {
   Content?: {
-    Headers?: { Subject?: string[]; To?: string[] };
+    Headers?: { From?: string[]; Subject?: string[]; To?: string[] };
     Body?: string;
   };
 }
@@ -34,6 +34,9 @@ runMailHogTests("NodemailerEmailAdapter with MailHog", () => {
       if (!matched) await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
+    expect(matched?.Content?.Headers?.From).toContain(
+      "Sports Center <no-reply@sports.local>",
+    );
     expect(matched?.Content?.Headers?.To).toContain(recipient);
     expect(matched?.Content?.Body).toContain(text);
   });
