@@ -26,6 +26,7 @@ describe("health API", () => {
     const response = await request(app.getHttpServer())
       .get("/docs-json")
       .expect(200);
+    expect(response.body.info.title).toBe("Sports Center API");
     expect(response.body.paths["/api/v1/health"]).toBeDefined();
 
     await app.close();

@@ -1,4 +1,4 @@
-# Sports Booking Platform
+# Sports Center
 
 Nền tảng tìm kiếm và đặt sân thể thao tại Thành phố Hồ Chí Minh. MVP hỗ trợ bóng đá, bóng rổ và cầu lông, với ba vai trò customer, owner và admin.
 

@@ -1,4 +1,4 @@
-# Đặc tả thiết kế Sports Booking Platform MVP
+# Đặc tả thiết kế Sports Center MVP
 
 **Ngày:** 2026-09-08
 **Trạng thái:** Đã phê duyệt theo `prompt.md`

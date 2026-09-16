@@ -1,4 +1,4 @@
-# Sports Booking Web — Urban Performance Redesign
+# Sports Center Web — Urban Performance Redesign
 
 **Ngày:** 2026-09-14  
 **Trạng thái:** Chờ duyệt trước khi lập implementation plan  

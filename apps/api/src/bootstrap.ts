@@ -24,7 +24,7 @@ export async function createApp() {
   const document = SwaggerModule.createDocument(
     app,
     new DocumentBuilder()
-      .setTitle("Sports Booking API")
+      .setTitle("Sports Center API")
       .setDescription("REST API cho nền tảng đặt sân thể thao")
       .setVersion("1.0")
       .addBearerAuth()

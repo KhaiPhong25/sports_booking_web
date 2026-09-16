@@ -92,7 +92,7 @@ services:
       REDIS_PORT: 6379
       MAIL_HOST: mailhog
       MAIL_PORT: 1025
-      MAIL_FROM: Đặt Sân <no-reply@sports.local>
+      MAIL_FROM: Sports Center <no-reply@sports.local>
       OUTBOX_POLL_INTERVAL_MS: 500
       OUTBOX_REPLAY_AFTER_SECONDS: 60
       WORKER_HEALTH_PORT: 3001

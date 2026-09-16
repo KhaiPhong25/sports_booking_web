@@ -23,7 +23,7 @@ export class NodemailerEmailAdapter implements EmailAdapter {
         port: Number(process.env.MAIL_PORT ?? 1025),
         secure: false,
       }),
-      process.env.MAIL_FROM ?? "Đặt Sân <no-reply@sports.local>",
+      process.env.MAIL_FROM ?? "Sports Center <no-reply@sports.local>",
     );
   }
 
