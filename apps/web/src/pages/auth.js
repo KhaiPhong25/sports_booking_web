@@ -1,13 +1,7 @@
 import { authApi } from "../services/auth-api.js";
-import {
-  canAccessRoute,
-  workspaceHome,
-} from "../services/route-access.js";
+import { canAccessRoute, workspaceHome } from "../services/route-access.js";
 
-export function loginReturnPath(
-  search = window.location.search,
-  roles = [],
-) {
+export function loginReturnPath(search = window.location.search, roles = []) {
   const fallback = workspaceHome(roles) ?? "/";
   const returnTo = new window.URLSearchParams(search).get("returnTo");
   if (!returnTo?.startsWith("/")) return fallback;

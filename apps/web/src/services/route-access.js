@@ -27,7 +27,8 @@ export function workspaceHome(roles = []) {
 export function canAccessRoute(pathname, roles = []) {
   const role = effectiveRole(roles);
   const isAuthRoute = pathname === "/login" || pathname === "/register";
-  const isDiscoveryRoute = pathname === "/" || matchesRoute(pathname, "/venues");
+  const isDiscoveryRoute =
+    pathname === "/" || matchesRoute(pathname, "/venues");
 
   if (!role) return isAuthRoute || isDiscoveryRoute;
   if (pathname === "/profile") return true;

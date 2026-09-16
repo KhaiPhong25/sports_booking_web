@@ -65,9 +65,9 @@ describe("authentication pages", () => {
   });
 
   it("keeps an allowed return path and rejects a route from another role", () => {
-    expect(
-      loginReturnPath("?returnTo=%2Fprofile", ["CUSTOMER", "ADMIN"]),
-    ).toBe("/profile");
+    expect(loginReturnPath("?returnTo=%2Fprofile", ["CUSTOMER", "ADMIN"])).toBe(
+      "/profile",
+    );
     expect(
       loginReturnPath("?returnTo=%2Fadmin%2Fusers", ["CUSTOMER", "OWNER"]),
     ).toBe("/owner");

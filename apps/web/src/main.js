@@ -62,10 +62,7 @@ import {
   renderAdminAuditLogs,
 } from "./pages/admin-audit.js";
 import { mountProfilePage, renderProfilePage } from "./pages/profile.js";
-import {
-  redirectForRoute,
-  workspaceHome,
-} from "./services/route-access.js";
+import { redirectForRoute, workspaceHome } from "./services/route-access.js";
 
 const app = document.querySelector("#app");
 if (!app) {

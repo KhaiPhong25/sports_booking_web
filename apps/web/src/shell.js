@@ -32,24 +32,26 @@ export function renderShell(
           ${navLink("/owner/apply", "Trở thành chủ sân", pathname, "venue")}
         </nav>`
       : "";
-  const ownerNavigation = role === "OWNER"
-    ? `<nav class="workspace-nav owner-nav" aria-label="Điều hướng chủ sân">
+  const ownerNavigation =
+    role === "OWNER"
+      ? `<nav class="workspace-nav owner-nav" aria-label="Điều hướng chủ sân">
         ${navLink("/owner", "Tổng quan", pathname, "venue")}
         ${navLink("/owner/calendar", "Lịch booking", pathname, "calendar")}
         ${navLink("/owner/bookings", "Quản lý booking", pathname, "booking")}
         ${navLink("/owner/venues", "Quản lý sân", pathname, "venue")}
         ${navLink("/owner/schedule", "Lịch & giá", pathname, "calendar")}
       </nav>`
-    : "";
-  const adminNavigation = role === "ADMIN"
-    ? `<nav class="workspace-nav admin-nav" aria-label="Điều hướng quản trị">
+      : "";
+  const adminNavigation =
+    role === "ADMIN"
+      ? `<nav class="workspace-nav admin-nav" aria-label="Điều hướng quản trị">
         ${navLink("/admin", "Tổng quan", pathname, "shield")}
         ${navLink("/admin/users", "Người dùng", pathname, "users")}
         ${navLink("/admin/owner-applications", "Hồ sơ owner", pathname, "booking")}
         ${navLink("/admin/venues", "Kiểm duyệt sân", pathname, "venue")}
         ${navLink("/admin/audit-logs", "Audit", pathname, "shield")}
       </nav>`
-    : "";
+      : "";
   const account = user
     ? `<div class="account-menu" data-account-menu>
         <button class="account-summary" type="button" aria-label="Mở menu tài khoản của ${escapeHtml(user.displayName ?? "Tài khoản")}" aria-expanded="false" aria-controls="account-menu">
